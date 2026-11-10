@@ -5,4 +5,6 @@ AS
     UPDATE Zone
     SET delivery_fee = @new_fee
     WHERE zone_id = @zone_id;
+
+    RETURN 0;
 GO

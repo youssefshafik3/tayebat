@@ -1,0 +1,31 @@
+-- Youssef Sameh 64-10650
+CREATE PROCEDURE dropAllTables
+AS
+    DROP TABLE IF EXISTS Feedback;
+    DROP TABLE IF EXISTS Payment;
+    DROP TABLE IF EXISTS Delivery;
+    DROP TABLE IF EXISTS Pharmacy;
+    DROP TABLE IF EXISTS Restaurant;
+    DROP TABLE IF EXISTS Card;
+    DROP TABLE IF EXISTS SubOrder;
+    DROP TABLE IF EXISTS Rider;
+    DROP TABLE IF EXISTS Orders;
+    DROP TABLE IF EXISTS CartItem;
+    DROP TABLE IF EXISTS Cart;
+    DROP TABLE IF EXISTS Voucher;
+    DROP TABLE IF EXISTS Favorite_Business;
+    DROP TABLE IF EXISTS Favorite_Product;
+    DROP TABLE IF EXISTS Product;
+    DROP TABLE IF EXISTS Address;
+    DROP TABLE IF EXISTS Business_Phone;
+    DROP TABLE IF EXISTS Business;
+    DROP TABLE IF EXISTS Blacklist;
+    DROP TABLE IF EXISTS Customer;
+    DROP TABLE IF EXISTS Partner;
+    DROP TABLE IF EXISTS User_Phone;
+    DROP TABLE IF EXISTS Admin;
+    DROP TABLE IF EXISTS Users;
+    DROP TABLE IF EXISTS Zone;
+
+    RETURN 0; 
+GO
