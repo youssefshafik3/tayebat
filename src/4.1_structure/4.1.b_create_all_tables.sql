@@ -278,4 +278,6 @@ AS
         FOREIGN KEY (suborder_id) REFERENCES SubOrder(suborder_id),
         CONSTRAINT chk_rating_range CHECK (rating BETWEEN 1 AND 5) 
     );
+
+    RETURN 0; 
 GO

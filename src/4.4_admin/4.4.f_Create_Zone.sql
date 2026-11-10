@@ -4,4 +4,6 @@ CREATE PROCEDURE Create_Zone
 AS
     INSERT INTO Zone (zone_name, delivery_fee)
     VALUES (@zone_name, @delivery_fee);
+
+    RETURN 0;
 GO

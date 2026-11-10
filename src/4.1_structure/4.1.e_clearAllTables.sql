@@ -25,5 +25,7 @@ AS
     TRUNCATE TABLE User_Phone;
     TRUNCATE TABLE Admin;
     TRUNCATE TABLE Users;
-    TRUNCATE TABLE Zone; 
+    TRUNCATE TABLE Zone;
+
+    RETURN 0; 
 GO
