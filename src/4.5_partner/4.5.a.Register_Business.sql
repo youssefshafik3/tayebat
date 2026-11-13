@@ -83,4 +83,6 @@ BEGIN
 INSERT INTO Pharmacy(business_id, pharmacy_type)
 VALUES (@business_id, @pharmacy_type);
 END
+
+RETURN 0;
 GO 
