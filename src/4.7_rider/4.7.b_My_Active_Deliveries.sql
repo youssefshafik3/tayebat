@@ -10,7 +10,7 @@ RETURN(
 	o.order_id,
 	so.suborder_id,
 	b.name AS business_name,
-	CONCAT(u.first_name+' '+u.last_name) AS customer_name,
+	CONCAT(u.first_name,' ',u.last_name) AS customer_name,
 	a.description AS address_description,
 	z.zone_name,
 	so.status,
