@@ -43,7 +43,6 @@ declare @business_status VARCHAR(20)
 SELECT @business_id = B.business_id , @business_status = B.status
 FROM Business B 
 WHERE B.partner_id = @partner_id;
---does I need to join with partner table to ensure the partner exist ?
 
 IF @business_id IS NOT NULL AND @business_status <> 'Rejected'
 RETURN -2;

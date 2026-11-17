@@ -4,10 +4,16 @@ CREATE PROCEDURE Update_Business_Info
 AS
 BEGIN
 
-IF @business_id NOT IN (SELECT business_id FROM Business)
-BEGIN
+IF @business_id IS NULL OR @business_id NOT IN (SELECT business_id FROM Business) OR @opening_hour IS NULL
+OR @closing_hour IS NULL OR @phone IS NULL OR LEN(@phone) <> 11 OR @phone LIKE '%[^0123456789]%' 
 RETURN -1;
-END
+
+IF EXISTS(SELECT * FROM Business B INNER JOIN Users U ON B.partner_id = U.user_id WHERE B.business_id = @business_id
+      AND U.account_status = 'Blacklisted')
+RETURN -3;
+
+IF EXISTS(SELECT * FROM Business_Phone B WHERE B.business_id = @business_id AND B.phone = @phone)
+RETURN -2;
 
 UPDATE Business 
 SET Business.link_website = @link_website,
