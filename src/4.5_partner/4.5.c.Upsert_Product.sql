@@ -4,24 +4,33 @@ CREATE PROCEDURE Upsert_Product
 @is_available BIT
 AS
 
-declare @business_status VARCHAR(20)
+IF @business_id IS NULL OR NOT EXISTS (SELECT 1 FROM Business WHERE business_id = @business_id)
+OR @name IS NULL OR LTRIM(RTRIM(@name)) = '' OR @category IS NULL OR LTRIM(RTRIM(@category)) = ''
+OR @price IS NULL OR @price <= 0 OR @is_available IS NULL
+RETURN -1;
 
-SELECT @business_status = B.status
-FROM Business B
-WHERE B.business_id = @business_id
+IF EXISTS (SELECT 1 FROM Business B INNER JOIN Users U ON B.partner_id = U.user_id
+        WHERE B.business_id = @business_id AND U.account_status = 'Blacklisted')
+RETURN -3;
 
-IF @business_status = 'Suspended' OR @business_id NOT IN (SELECT P.business_id FROM Product P WHERE P.product_id = @product_id)
-BEGIN 
+IF EXISTS (SELECT 1 FROM Business WHERE business_id = @business_id
+AND status = 'Suspended')
 RETURN -4;
-END
 
 BEGIN 
 IF @product_id IS NULL 
 BEGIN 
-INSERT INTO Product (name,description, category, price, is_available)
-VALUES (@name, @description, @category, @price, @is_available)
+INSERT INTO Product (name, description, category, price, is_available, business_id)
+VALUES (@name, @description, @category, @price, @is_available, @business_id);
 RETURN 0;
 END
+
+IF NOT EXISTS (SELECT 1 FROM Product WHERE product_id = @product_id)
+RETURN -1;
+
+IF NOT EXISTS (SELECT 1 FROM Product WHERE product_id = @product_id
+AND business_id = @business_id)
+RETURN -3;
 
 UPDATE Product 
 SET Product.name = @name,
