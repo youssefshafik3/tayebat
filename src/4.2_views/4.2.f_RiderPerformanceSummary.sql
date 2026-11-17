@@ -3,7 +3,7 @@
 GO
 CREATE VIEW RiderPerformanceSummary
 AS
-SELECT r.rider_id,CONCAT(u.first_name+' '+u.last_name) AS rider_name,z.zone_name ,
+SELECT r.rider_id,CONCAT(u.first_name,' ',u.last_name) AS rider_name,z.zone_name ,
 COUNT(d.delivery_id) AS completed_deliveries,
 AVG(f.rating) AS avg_rating
 
