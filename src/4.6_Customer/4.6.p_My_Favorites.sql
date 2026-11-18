@@ -1,4 +1,4 @@
-CREATE FUNCTION My_Favorites (@customer_id int)
+CREATE FUNCTION dbo.My_Favorites (@customer_id int)
 RETURNS TABLE 
 AS
 RETURN(
