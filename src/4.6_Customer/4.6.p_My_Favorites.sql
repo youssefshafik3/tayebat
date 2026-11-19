@@ -1,3 +1,5 @@
+--Ziad Yasser Ibrahim 65-33790
+
 CREATE FUNCTION dbo.My_Favorites (@customer_id int)
 RETURNS TABLE 
 AS

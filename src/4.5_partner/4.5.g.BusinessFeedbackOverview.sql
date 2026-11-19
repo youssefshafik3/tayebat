@@ -1,3 +1,5 @@
+--Omar Waleed El-sayed 64-29234
+
 CREATE FUNCTION dbo.BusinessFeedbackOverview (@business_id INT)
 RETURNS TABLE
 AS

@@ -1,3 +1,5 @@
+--Ziad Yasser Ibrahim 65-33790
+
 CREATE VIEW allBusinessProfiles
 AS
 SELECT B.business_id, B.name AS business_name, CASE WHEN R.business_id IS NOT NULL THEN 'Restaurant'

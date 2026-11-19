@@ -1,3 +1,5 @@
+--Ziad Yasser Ibrahim 65-33790
+
 GO
 Create Procedure Register_Business
 @partner_id INT, @name VARCHAR(100), @description VARCHAR(255),

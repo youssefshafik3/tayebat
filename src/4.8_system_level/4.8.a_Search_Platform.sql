@@ -1,3 +1,5 @@
+--Ziad Yasser Ibrahim 65-33790
+
 CREATE FUNCTION dbo.Search_Platform (@customer_id INT, @keyword VARCHAR(100))
 RETURNS TABLE
 AS 

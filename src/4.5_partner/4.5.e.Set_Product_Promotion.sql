@@ -1,3 +1,5 @@
+--Ziad Yasser Ibrahim 65-33790
+
 GO 
 CREATE PROCEDURE Set_Product_Promotion
 @product_id INT, @discount_amount DECIMAL(10,2)
