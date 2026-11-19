@@ -1,3 +1,5 @@
+--Ziad Yasser Ibrahim 65-33790
+
 CREATE VIEW TopSellingProducts 
 AS
 SELECT TOP 10 P.product_id, P.name AS product_name,B.name AS business_name, CASE WHEN R.business_id IS NOT NULL 
