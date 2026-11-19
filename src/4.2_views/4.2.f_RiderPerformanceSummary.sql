@@ -5,7 +5,7 @@ CREATE VIEW RiderPerformanceSummary
 AS
 SELECT r.rider_id,CONCAT(u.first_name,' ',u.last_name) AS rider_name,z.zone_name ,
 COUNT(d.delivery_id) AS completed_deliveries,
-AVG(CAST(f.rating AS DECIMAL(10,2)) AS avg_rating
+AVG(CAST(d.rider_rating AS DECIMAL(10,2))) AS avg_rating
 
 FROM ((Rider r INNER JOIN Users u ON r.rider_id = u.user_id) INNER JOIN Zone z ON r.zone_id = z.zone_id)
 	LEFT OUTER JOIN (Delivery d 
