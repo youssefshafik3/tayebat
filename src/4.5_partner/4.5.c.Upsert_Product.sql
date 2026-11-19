@@ -34,6 +34,9 @@ IF NOT EXISTS (SELECT * FROM Product WHERE product_id = @product_id
 AND business_id = @business_id)
 RETURN -3;
 
+IF EXISTS (SELECT 1 FROM Product WHERE product_id = @product_id AND discount_amount > 0.5 * @price)
+RETURN -1;
+
 UPDATE Product 
 SET Product.name = @name,
 Product.description = @description, 
