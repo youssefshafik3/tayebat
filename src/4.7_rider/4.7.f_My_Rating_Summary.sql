@@ -5,7 +5,7 @@ CREATE FUNCTION My_Rating_Summary(@rider_id INT)
 RETURNS TABLE
 AS
 RETURN(
-	SELECT AVG(f.rating) AS avg_rating ,COUNT(f.rating) AS ratings_count,
+	SELECT AVG(CAST(f.rating AS DECIMAL(10,2)) AS avg_rating ,COUNT(f.rating) AS ratings_count,
 	COUNT(CASE WHEN f.rating = 5 THEN 1 END) AS five_star,
 	COUNT(CASE WHEN f.rating = 4 THEN 1 END) AS four_star,
 	COUNT(CASE WHEN f.rating = 3 THEN 1 END) AS three_star,

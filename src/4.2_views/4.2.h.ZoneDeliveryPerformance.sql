@@ -5,7 +5,7 @@ CREATE VIEW ZoneDeliveryPerformance
 AS
 SELECT z.zone_id,z.zone_name,
 COUNT(d.delivery_id) AS delivery_count,
-AVG(d.tracking_time) AS avg_tracking_time
+AVG(CAST(d.tracking_time AS DECIMAL(10,2))) AS avg_tracking_time
 
 FROM (Zone z LEFT OUTER JOIN Orders o ON z.zone_id = o.zone_id)
 LEFT OUTER JOIN (Delivery d 
