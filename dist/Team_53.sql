@@ -1,12 +1,8 @@
-
-
-
 -- Youssef Sameh 64-10650
 CREATE DATABASE LocalDeliveryMarketplace_Team_53;
 GO
 USE LocalDeliveryMarketplace_Team_53;
 GO
-
 
 -- Youssef Sameh 64-10650
 CREATE OR ALTER PROCEDURE createAllTables
@@ -266,32 +262,6 @@ AS
     RETURN 0; 
 GO
 
-
--- Youssef Sameh 64-10650
-CREATE OR ALTER PROCEDURE Helper_Recompute_Order_Status
-    @order_id INT
-AS
-    
-    UPDATE Orders
-    SET status = CASE WHEN (NOT EXISTS (SELECT S.status
-                                    FROM SubOrder S
-                                    WHERE S.order_id = @order_id
-                                    AND S.status IN ('Placed', 'Assigned', 'Picked Up','Delivered'))) THEN 'Cancelled'
-                      WHEN (NOT EXISTS (SELECT S.status
-                                    FROM SubOrder S
-                                    WHERE S.order_id = @order_id
-                                    AND S.status IN ('Placed', 'Assigned', 'Picked Up'))) THEN 'Delivered'
-                      WHEN (EXISTS (SELECT S.status
-                                    FROM SubOrder S
-                                    WHERE S.order_id = @order_id
-                                    AND S.status IN ('Delivered','Picked Up'))) THEN 'In Progress'
-                      ELSE 'Placed'
-                      END
-    WHERE order_id = @order_id
-
-    RETURN 0;
-GO
-
 EXEC createAllTables
 GO
 
@@ -372,7 +342,6 @@ BEGIN
 
     DROP PROCEDURE IF EXISTS createAllTables;
     DROP PROCEDURE IF EXISTS dropAllTables;
-    DROP PROCEDURE IF EXISTS clearAllTables;
     DROP PROCEDURE IF EXISTS Customer_Register;
     DROP PROCEDURE IF EXISTS Partner_Register;
     DROP PROCEDURE IF EXISTS Rider_Register;
@@ -414,6 +383,31 @@ BEGIN
     RETURN 0;
 
 END;
+GO
+
+-- Youssef Sameh 64-10650
+CREATE OR ALTER PROCEDURE Helper_Recompute_Order_Status
+    @order_id INT
+AS
+    
+    UPDATE Orders
+    SET status = CASE WHEN (NOT EXISTS (SELECT S.status
+                                    FROM SubOrder S
+                                    WHERE S.order_id = @order_id
+                                    AND S.status IN ('Placed', 'Assigned', 'Picked Up','Delivered'))) THEN 'Cancelled'
+                      WHEN (NOT EXISTS (SELECT S.status
+                                    FROM SubOrder S
+                                    WHERE S.order_id = @order_id
+                                    AND S.status IN ('Placed', 'Assigned', 'Picked Up'))) THEN 'Delivered'
+                      WHEN (EXISTS (SELECT S.status
+                                    FROM SubOrder S
+                                    WHERE S.order_id = @order_id
+                                    AND S.status IN ('Delivered','Picked Up'))) THEN 'In Progress'
+                      ELSE 'Placed'
+                      END
+    WHERE order_id = @order_id
+
+    RETURN 0;
 GO
 
 
@@ -829,7 +823,7 @@ GO
 CREATE OR ALTER PROCEDURE Suspend_Business
     @business_id INT, @admin_id INT, @reason VARCHAR(255)
 AS
-    IF @admin_id IS NULL OR @business_id IS NULL OR @reason IS NULL
+    IF @admin_id IS NULL OR @business_id IS NULL OR @reason IS NULL OR LTRIM(RTRIM(@reason)) = ''
         RETURN -1;
 
     IF NOT EXISTS (SELECT *
@@ -1764,7 +1758,7 @@ return -4;
 end
 
 if not exists(select * from product p inner join business b on b.business_id=p.business_id
-where @product_id=p.product_id and (b.status='Active' or p.is_available=0) )
+where @product_id=p.product_id and (b.status='Active' and p.is_available=1) )
 return -4;
 
 declare @cartzone int
@@ -1927,7 +1921,7 @@ return -7;
 declare @isValidCard bit
 select @isValidCard=1
 
-if @card_id is null or not exists(select *from card where card_id=@card_id and customer_id =@customer_id and expiration_date> cast(GETDATE() as date))
+if @card_id is null or not exists(select *from card where card_id=@card_id and customer_id =@customer_id and expiration_date>= cast(GETDATE() as date))
 select @isValidCard=0
 
 
@@ -2094,7 +2088,7 @@ where o.order_id=@order_id)
 
 if @order_id is null or @address_id is null
 return-1;
-
+iF @customer_id IS NULL RETURN -1;
 if exists(select* from users where @customer_id=user_id and account_status='Blacklisted')
 or not exists(Select * from address a where a.customer_id=@customer_id and a.address_id=@address_id)
 return -3;
@@ -2151,7 +2145,7 @@ BEGIN
 		RETURN -1;
 	END
 
-	IF @rating NOT BETWEEN 1 AND 5 OR @headline is NULL
+	IF @rating NOT BETWEEN 1 AND 5 OR @headline is NULL OR @rating is NULL
 	BEGIN
 		RETURN -1;
 	END
@@ -2188,7 +2182,7 @@ CREATE PROCEDURE Rate_Rider
 	@rider_rating int
 AS
 BEGIN
-	IF @suborder_id NOT IN (SELECT suborder_id FROM SubOrder) OR @rider_rating NOT BETWEEN 1 AND 5
+	IF @suborder_id NOT IN (SELECT suborder_id FROM SubOrder) OR @rider_rating NOT BETWEEN 1 AND 5 OR @rider_rating is NULL
 	BEGIN
 		RETURN -1;
 	END
@@ -2335,7 +2329,7 @@ SELECT p.product_id,p.name AS product_name,b.name AS business_name,p.category,
 		(SELECT SUM(ci2.quantity)
 		FROM Orders o2 INNER JOIN Cart c2 ON o2.cart_id = c2.cart_id 
 					INNER JOIN CartItem ci2 ON ci2.cart_id = c2.cart_id
-					INNER JOIN Product p2 ON ci2.product_id = p2.product_id
+					INNER JOIN Product p2 ON ci2.product_id = p2.product_id AND o2.status <> 'Cancelled'
 		WHERE c2.customer_id = @customer_id AND p.category = p2.category) AS count_of_ordered_category
 
 FROM Product p INNER JOIN Business b ON p.business_id = b.business_id
@@ -2345,7 +2339,7 @@ WHERE p.is_available = 1 AND b.status = 'Active'
 	AND NOT EXISTS( SELECT *
 	FROM Orders o INNER JOIN Cart c ON o.cart_id = c.cart_id
 		INNER JOIN CartItem ci ON ci.cart_id = c.cart_id
-	WHERE c.customer_id = @customer_id AND ci.product_id = p.product_id
+	WHERE c.customer_id = @customer_id AND ci.product_id = p.product_id AND o.status <> 'Cancelled'
 	)
 ) AS T
 
@@ -2497,7 +2491,7 @@ BEGIN
 	SET status = 'Delivered'
 	WHERE order_id=@o_id AND NOT EXISTS(SELECT so.suborder_id
 	FROM SubOrder so
-	WHERE so.order_id = @o_id AND so.status <> 'Delivered' AND so.status <> 'Canceled'
+	WHERE so.order_id = @o_id AND so.status <> 'Delivered' AND so.status <> 'Cancelled'
 	)
 	AND EXISTS(SELECT so.suborder_id
 	FROM SubOrder so
@@ -2520,7 +2514,12 @@ RETURN(
 
 	FROM Delivery d INNER JOIN SubOrder so ON d.suborder_id = so.suborder_id
 	WHERE d.rider_id = @rider_id AND CAST(d.delivered_at AS DATE) >= @from_date 
-	AND CAST(d.delivered_at AS DATE) <= @to_date AND so.status = 'Delivered' 
+	AND CAST(d.delivered_at AS DATE) <= @to_date AND so.status = 'Delivered'AND @rider_id IS NOT NULL
+        AND @from_date IS NOT NULL
+        AND @to_date IS NOT NULL
+        AND @from_date <= @to_date 
+
+	GROUP BY d.rider_id
 );
 GO
 
@@ -2532,17 +2531,16 @@ CREATE FUNCTION My_Rating_Summary(@rider_id INT)
 RETURNS TABLE
 AS
 RETURN(
-	SELECT AVG(CAST(f.rating AS DECIMAL(10,2))) AS avg_rating ,COUNT(f.rating) AS ratings_count,
-	COUNT(CASE WHEN f.rating = 5 THEN 1 END) AS five_star,
-	COUNT(CASE WHEN f.rating = 4 THEN 1 END) AS four_star,
-	COUNT(CASE WHEN f.rating = 3 THEN 1 END) AS three_star,
-	COUNT(CASE WHEN f.rating = 2 THEN 1 END) AS two_star,
-	COUNT(CASE WHEN f.rating = 1 THEN 1 END) AS one_star
+	SELECT AVG(CAST(d.rider_rating AS DECIMAL(10,2))) AS avg_rating ,COUNT(d.rider_rating) AS ratings_count,
+	COUNT(CASE WHEN d.rider_rating = 5 THEN 1 END) AS five_star,
+	COUNT(CASE WHEN d.rider_rating = 4 THEN 1 END) AS four_star,
+	COUNT(CASE WHEN d.rider_rating = 3 THEN 1 END) AS three_star,
+	COUNT(CASE WHEN d.rider_rating = 2 THEN 1 END) AS two_star,
+	COUNT(CASE WHEN d.rider_rating = 1 THEN 1 END) AS one_star
 
-	FROM Rider r LEFT OUTER JOIN (Delivery d 
-	INNER JOIN(SubOrder so LEFT OUTER JOIN Feedback f ON f.suborder_id = so.suborder_id) 
-	ON so.suborder_id = d.suborder_id) ON r.rider_id = d.rider_id
-	WHERE r.rider_id = @rider_id
+	FROM Delivery d
+	WHERE d.rider_id = @rider_id
+	GROUP BY d.rider_id
 );
 GO
 
@@ -2607,22 +2605,49 @@ GO
 
 
 --Ziad Yasser Ibrahim 65-33790
-
 CREATE FUNCTION dbo.Nearby_Businesses_By_Category(@address_id INT, @product_category VARCHAR(50))
-RETURNS TABLE
+RETURNS @Result TABLE (
+business_id INT,
+business_name VARCHAR(100),
+zone_name VARCHAR(50),
+same_zone BIT,
+zone_avg_delivery_time DECIMAL(10,2)
+)
 AS
-RETURN(
-SELECT B.business_id, B.name AS business_name, Z.zone_name, CASE WHEN B.zone_id = A.zone_id
-THEN 1 ELSE 0 END AS same_zone, (SELECT AVG(CAST(D.tracking_time AS DECIMAL(10,2)))
-FROM Delivery D INNER JOIN SubOrder SO ON D.suborder_id = SO.suborder_id
-INNER JOIN Orders O ON SO.order_id = O.order_id WHERE O.zone_id = B.zone_id AND SO.status = 'Delivered'
+BEGIN
+IF @address_id IS NULL OR @product_category IS NULL OR LTRIM(RTRIM(@product_category)) = ''
+RETURN;
+
+INSERT INTO @Result (business_id, business_name, zone_name, same_zone, zone_avg_delivery_time)
+SELECT
+B.business_id,
+B.name AS business_name,
+Z.zone_name,
+CAST(CASE WHEN B.zone_id = A.zone_id THEN 1 ELSE 0 END AS BIT) AS same_zone,
+(
+SELECT AVG(CAST(D.tracking_time AS DECIMAL(10,2)))
+FROM Delivery D
+INNER JOIN SubOrder SO ON D.suborder_id = SO.suborder_id
+INNER JOIN Orders O ON SO.order_id = O.order_id
+WHERE O.zone_id = B.zone_id AND SO.status = 'Delivered'
 ) AS zone_avg_delivery_time
-FROM Business B 
+FROM Business B
 INNER JOIN Zone Z ON B.zone_id = Z.zone_id
 INNER JOIN Address A ON A.address_id = @address_id
-WHERE @product_category IS NOT NULL AND B.status = 'Active' AND EXISTS 
-(SELECT * FROM Product P WHERE B.business_id = P.business_id AND P.is_available = 1  AND P.category = @product_category)
-);
+WHERE B.status = 'Active'
+AND EXISTS (
+SELECT *
+FROM Product P
+WHERE P.business_id = B.business_id
+AND P.is_available = 1 AND P.category = @product_category
+)
+ORDER BY
+same_zone DESC,
+zone_avg_delivery_time ASC,
+B.business_id ASC;
+
+RETURN;
+END;
 GO
 
 
@@ -2636,7 +2661,7 @@ RETURN(
 	SELECT (SELECT COUNT(*) FROM Business WHERE status = 'Active') AS active_businesses,
 	(SELECT COUNT(*) FROM Rider WHERE is_available=1) AS available_riders,
 	(SELECT COUNT(*) FROM Orders WHERE CAST(order_date AS DATE) = CAST(GETDATE() AS DATE)) AS orders_today,
-	(SELECT AVG(tracking_time) FROM Delivery WHERE CAST(delivered_at AS DATE) = CAST(GETDATE() AS DATE)) AS avg_delivery_time_today,
+	(SELECT AVG(CAST(tracking_time AS DECIMAL(10,2))) FROM Delivery WHERE CAST(delivered_at AS DATE) = CAST(GETDATE() AS DATE)) AS avg_delivery_time_today,
 	(SELECT COUNT(*) FROM Feedback WHERE rating <=2 AND CAST(feedback_date AS DATE) = CAST(GETDATE() AS DATE)) AS low_ratings_today
 )
 GO
