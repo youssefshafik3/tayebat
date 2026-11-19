@@ -15,7 +15,7 @@ IF (NOT EXISTS(SELECT 1 FROM Customer C WHERE C.customer_id=@customer_id) OR NOT
 BEGIN
 RETURN -3;
 END;
-IF EXISTS(SELECT 1 FROM Admin A INNER JOIN Zone Z ON A.zone_id=Z.zone_id INNER JOIN Address AD ON Z.zone_id=AD.zone_id AND AD.customer_id=@customer_id AND A.admin_id<>@admin_id)
+IF EXISTS(SELECT 1 FROM Admin A WHERE A.role='Zone Admin' AND A.admin_id=@admin_id)AND NOT EXISTS(SELECT 1 FROM Admin A INNER JOIN Zone Z ON A.zone_id=Z.zone_id INNER JOIN Address AD ON Z.zone_id=AD.zone_id WHERE AD.customer_id=@customer_id AND A.role='Zone Admin' AND A.admin_id=@admin_id)
 BEGIN
 RETURN -3;
 END;
