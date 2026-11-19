@@ -12,5 +12,5 @@ FROM ((Rider r INNER JOIN Users u ON r.rider_id = u.user_id) INNER JOIN Zone z O
 	INNER JOIN ((SELECT * FROM SubOrder WHERE status = 'Delivered') AS so
 	LEFT OUTER JOIN Feedback f ON f.suborder_id = so.suborder_id)
 	ON d.suborder_id = so.suborder_id) ON d.rider_id = r.rider_id
-GROUP BY r.rider_id,r.name,z.zone_name
+GROUP BY r.rider_id,u.first_name,u.last_name,z.zone_name
 GO
