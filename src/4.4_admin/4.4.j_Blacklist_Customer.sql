@@ -9,7 +9,7 @@ RETURN -1;
 END;
 IF EXISTS (SELECT 1 FROM Blacklist B WHERE B.customer_id=@customer_id) OR EXISTS(SELECT 1 FROM Users U WHERE U.user_id=@customer_id AND U.account_status='Blacklisted')
 BEGIN
-RETURN -3;
+RETURN -4;
 END;
 IF (NOT EXISTS(SELECT 1 FROM Customer C WHERE C.customer_id=@customer_id) OR NOT EXISTS(SELECT 1 FROM Admin A WHERE A.admin_id=@admin_id))
 BEGIN
