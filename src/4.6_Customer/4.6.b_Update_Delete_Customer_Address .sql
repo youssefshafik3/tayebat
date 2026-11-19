@@ -12,7 +12,9 @@ where @customer_id=c.customer_id and @address_id=c.address_id and o.status in ('
 
 declare @validdel bit
 select @validdel = case when not exists(select * from cart c 
-where @customer_id=c.customer_id and @address_id=c.address_id )
+where @customer_id=c.customer_id and @address_id=c.address_id ) or exists(select * from cart c
+inner join orders o on o.cart_id=c.cart_id
+where @customer_id=c.customer_id and @address_id=c.address_id and o.status in ('Placed', 'In Progress') )
 then 1 else 0 end
 
 if (@customer_id is null or @address_id is null or @action is null) or
