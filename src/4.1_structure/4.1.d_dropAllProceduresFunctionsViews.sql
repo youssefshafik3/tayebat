@@ -42,7 +42,6 @@ BEGIN
 
     DROP PROCEDURE IF EXISTS createAllTables;
     DROP PROCEDURE IF EXISTS dropAllTables;
-    DROP PROCEDURE IF EXISTS clearAllTables;
     DROP PROCEDURE IF EXISTS Customer_Register;
     DROP PROCEDURE IF EXISTS Partner_Register;
     DROP PROCEDURE IF EXISTS Rider_Register;

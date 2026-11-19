@@ -2,7 +2,7 @@
 CREATE OR ALTER PROCEDURE Suspend_Business
     @business_id INT, @admin_id INT, @reason VARCHAR(255)
 AS
-    IF @admin_id IS NULL OR @business_id IS NULL OR @reason IS NULL
+    IF @admin_id IS NULL OR @business_id IS NULL OR @reason IS NULL OR LTRIM(RTRIM(@reason)) = ''
         RETURN -1;
 
     IF NOT EXISTS (SELECT *
