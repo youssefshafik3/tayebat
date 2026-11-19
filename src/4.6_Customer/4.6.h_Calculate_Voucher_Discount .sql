@@ -1,5 +1,5 @@
+go
 --Ahmed Walid 64-25319 s3
-go 
 create function dbo.Calculate_Voucher_Discount(@voucher_id int, @order_subtotal decimal(10,2))
 returns decimal(10,2)
 as
