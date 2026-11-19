@@ -1,5 +1,5 @@
 -- Youssef Sameh 64-10650
-CREATE FUNCTION dbo.Daily_Revenue_Report (@report_date DATE)
+CREATE OR ALTER FUNCTION dbo.Daily_Revenue_Report (@report_date DATE)
 RETURNS TABLE
 AS
 RETURN
