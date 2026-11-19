@@ -1,3 +1,5 @@
+--Ziad Yasser Ibrahim 65-33790
+
 GO
 CREATE PROCEDURE Update_Business_Info
 @business_id INT, @opening_hour TIME, @closing_hour TIME, @phone CHAR(11), @link_website VARCHAR(255)
