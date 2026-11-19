@@ -10,7 +10,11 @@ return -1;
 if not exists(select * from cart where cart_id=@cart_id and status='Active')
 or exists (select * from cart c inner join address a on a.address_id =c.address_id 
 where @cart_id=c.cart_id and a.is_active=0)
+begin
+print('not your active address address')
 return -4;
+end
+
 
 declare @cartzone int
 declare @businesszone int
@@ -19,8 +23,10 @@ select @cartzone =(select a.zone_id from cart c inner join address a on a.addres
 select @businesszone= (select b.zone_id from product p inner join business b on b.business_id=p.business_id where p.product_id=@product_id)
 
 if @cartzone!=@businesszone
+begin
+print ('not your zone')
 return -5;
-
+end
 declare @myprodquant int
 declare @prodexists bit
 select @prodexists= case when exists (select * from cartitem where cart_id=@cart_id and @product_id=product_id) then 1 else 0 end
