@@ -68,7 +68,7 @@ return -7;
 declare @isValidCard bit
 select @isValidCard=1
 
-if @card_id is null or not exists(select *from card where card_id=@card_id and customer_id =@customer_id and expiration_date> cast(GETDATE() as date))
+if @card_id is null or not exists(select *from card where card_id=@card_id and customer_id =@customer_id and expiration_date>= cast(GETDATE() as date))
 select @isValidCard=0
 
 

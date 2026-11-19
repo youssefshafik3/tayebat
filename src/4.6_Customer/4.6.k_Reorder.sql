@@ -13,7 +13,7 @@ where o.order_id=@order_id)
 
 if @order_id is null or @address_id is null
 return-1;
-
+iF @customer_id IS NULL RETURN -1;
 if exists(select* from users where @customer_id=user_id and account_status='Blacklisted')
 or not exists(Select * from address a where a.customer_id=@customer_id and a.address_id=@address_id)
 return -3;
