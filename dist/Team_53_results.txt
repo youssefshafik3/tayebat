@@ -1,0 +1,136 @@
+================================================================================
+Results for LocalDeliveryMarketplace_Team_53
+================================================================================
+PU-4.1.a    PASS  Database name follows LocalDeliveryMarketplace_Team_XX
+PU-4.1.b    PASS  createAllTables: tables, column order, types, NULL-ability, primary keys and identities match Section 3
+PU-4.2.a    PASS  allBusinessProfiles lists every business (any status) with type, zone and partner
+PU-4.2.b    PASS  BusinessesPerZone counts Active businesses and keeps empty zones
+PU-4.2.c    FAIL  BusinessRatingsSummary averages feedback per business
+                  - rows: expected 8 row(s), got 8. Missing rows: [{"business_id":1,"business_name":"Koshary El Tahrir","avg_rating":3.50,"ratings_count":2}]. Unexpected rows: [{"business_id":1,"business_name":"Koshary El Tahrir","avg_rating":3.00,"ratings_count":2}]
+PU-4.2.d    PASS  ActiveVouchers returns Unused, non-expired vouchers
+PU-4.2.e    PASS  PendingBusinessApprovals returns Pending businesses only
+PU-4.2.f    FAIL  RiderPerformanceSummary lists every rider with completed deliveries and rating
+                  - rows: expected 5 row(s), got 5. Missing rows: [{"rider_id":12,"rider_name":"Ali Ibrahim","zone_name":"Maadi","completed_deliveries":2,"avg_rating":4.50},{"rider_id":13,"rider_name":"Mostafa Kamal","zone_name":"Maadi","completed_deliveries":2,"avg_rating":4.00},{"rider_id":16,"rider_name":"Fady Ramzy","zone_name":"New Cairo","completed_deliveries":1,"avg_rating":3.00}]. Unexpected rows: [{"rider_id":12,"rider_name":"Ali Ibrahim","zone_name":"Maadi","completed_deliveries":2,"avg_rating":4.00},{"rider_id":13,"rider_name":"Mostafa Kamal","zone_name":"Maadi","completed_deliveries":2,"avg_rating":2.00},{"rider_id":16,"rider_name":"Fady Ramzy","zone_name":"New Cairo","completed_deliveries":1,"avg_rating":4.00}]
+PU-4.2.g    PASS  TopSellingProducts returns the top 10 by units, ignoring cancelled SubOrders
+PU-4.2.h    FAIL  ZoneDeliveryPerformance counts Delivered deliveries per zone
+                  - rows: expected 4 row(s), got 4. Missing rows: [{"zone_id":1,"zone_name":"Maadi","delivery_count":4,"avg_tracking_time":22.50}]. Unexpected rows: [{"zone_id":1,"zone_name":"Maadi","delivery_count":4,"avg_tracking_time":22.00}]
+PU-4.3.a-1  PASS  Customer_Register creates an Active customer with a 0 wallet and a phone
+PU-4.3.a-2  PASS  Customer_Register returns -2 for a duplicate username and -1 for an invalid phone
+PU-4.3.b-1  PASS  Partner_Register creates a partner without a business
+PU-4.3.b-2  PASS  Partner_Register returns -2 for a duplicate email
+PU-4.3.c-1  PASS  Rider_Register creates an available rider in the given zone
+PU-4.3.c-2  PASS  Rider_Register returns -2 for a duplicate plate number
+PU-4.3.d    PASS  CustomerLoginValidation accepts valid Active customers only
+PU-4.3.e    PASS  PartnerLoginValidation accepts partners only
+PU-4.3.f    PASS  RiderLoginValidation accepts riders only
+PU-4.3.g    PASS  AdminLoginValidation accepts admins only
+PU-4.3.h-1  PASS  Change_Password changes the password and sets success = 1
+PU-4.3.h-2  PASS  Change_Password returns -1 with success = 0 and changes nothing when the repeat differs or the old password is wrong
+PU-4.4.a-1  PASS  Create_Admin: a Super Admin creates a Zone Admin
+PU-4.4.a-2  PASS  Create_Admin returns -3 when a Zone Admin calls it
+PU-4.4.b-1  PASS  Approve_Business: the Zone Admin of the zone approves a Pending business
+PU-4.4.b-2  PASS  Approve_Business returns -3 for a Zone Admin of another zone and -4 for a business that is not Pending
+PU-4.4.c-1  PASS  Reject_Business changes a Pending business to Rejected
+PU-4.4.c-2  PASS  Reject_Business returns -3 for a Zone Admin of another zone and -4 for a business that is not Pending
+PU-4.4.d-1  PASS  Suspend_Business hides the business, cancels its Placed/Assigned SubOrders and refunds them
+PU-4.4.d-2  PASS  Suspend_Business restores the voucher of an order it cancels entirely and caps the refund at the payment
+PU-4.4.d-3  PASS  Suspend_Business returns -3 out of scope and -4 for a business that is not Active
+PU-4.4.e-1  PASS  Reinstate_Business: a Super Admin reinstates a Suspended business, products stay unavailable
+PU-4.4.e-2  PASS  Reinstate_Business returns -3 for a Zone Admin and -4 for a business that is not Suspended
+PU-4.4.f-1  PASS  Create_Zone creates a zone
+PU-4.4.f-2  PASS  Create_Zone returns -2 for a duplicate name, -3 for a Zone Admin and -1 for a negative fee
+PU-4.4.g-1  PASS  Update_Zone_Fee changes the fee without touching existing SubOrders
+PU-4.4.g-2  PASS  Update_Zone_Fee returns -3 for a Zone Admin and -1 for a negative fee
+PU-4.4.h-1  PASS  Assign_Admin_Zone moves a Zone Admin
+PU-4.4.h-2  PASS  Assign_Admin_Zone returns -1 for a Super Admin target and -3 for a Zone Admin caller
+PU-4.4.i-1  PASS  Issue_Voucher creates an Unused voucher
+PU-4.4.i-2  PASS  Issue_Voucher returns -3 for a Blacklisted customer and -2 for a duplicate promo code
+PU-4.4.j-1  PASS  Blacklist_Customer blocks the account, cancels cancellable orders, refunds and deletes Unused vouchers
+PU-4.4.j-2  FAIL  Blacklist_Customer returns -4 if already Blacklisted and -3 for a Zone Admin without an address in the zone
+                  - already blacklisted: expected return code -4 but got -3 [dbo.Blacklist_Customer 21, 1, 'Again']
+PU-4.4.k-1  PASS  Lift_Customer_Blacklist: the admin who blacklisted the customer lifts it
+PU-4.4.k-2  PASS  Lift_Customer_Blacklist returns -3 for any other admin, even a Super Admin
+PU-4.4.l    PASS  ZoneOrderReport for Maadi and New Cairo in September
+PU-4.4.m    FAIL  TopRiders ranks riders by deliveries delivered in the period
+                  - columns: cannot describe [SELECT * FROM dbo.TopRiders('2026-09-01', '2026-09-30')]: Invalid object name 'dbo.TopRiders'.
+                  - rows: error while running [SELECT * FROM dbo.TopRiders('2026-09-01', '2026-09-30')]: Invalid object name 'dbo.TopRiders'.
+PU-4.4.n    PASS  Daily_Revenue_Report splits a day by zone and business type
+PU-4.5.a-1  PASS  Register_Business creates a Pending restaurant with its phone and subtype row
+PU-4.5.a-2  PASS  Register_Business returns -2 for a partner who already owns a business and -1 for a Restaurant without food_category
+PU-4.5.a-3  PASS  Register_Business re-registers a Rejected business: same row, new data, back to Pending
+PU-4.5.b-1  PASS  Update_Business_Info updates hours and website and adds a phone
+PU-4.5.b-2  PASS  Update_Business_Info returns -1 for a malformed phone and -2 for a phone the business already has
+PU-4.5.c-1  PASS  Upsert_Product inserts a new product when product_id is NULL and updates an existing one
+PU-4.5.c-2  FAIL  Upsert_Product returns -3 for a product of another business, -4 for a Suspended business and -1 for invalid data
+                  - discount would exceed 50%: the call raised an error instead of returning -1 [dbo.Upsert_Product 2, 5, 'Margherita Pizza', NULL, 'Pizza', 30.00, 1]: The UPDATE statement conflicted with the CHECK constraint "chk_discount_range". The conflict occurred in database "LocalDeliveryMarketplace_Team_53", table "dbo.Product".
+PU-4.5.d-1  PASS  Toggle_Product_Status deactivates a product
+PU-4.5.d-2  PASS  Toggle_Product_Status returns -4 when reactivating while the business is Suspended
+PU-4.5.e-1  PASS  Set_Product_Promotion sets a discount amount and 0 removes it
+PU-4.5.e-2  PASS  Set_Product_Promotion returns -1 for a discount above 50% of the price or a negative one
+PU-4.5.f    PASS  BusinessSalesReport for Koshary El Tahrir in September
+PU-4.5.g    PASS  BusinessFeedbackOverview with star breakdown
+PU-4.6.a-1  PASS  Add_Customer_Address adds an address that becomes the only active one
+PU-4.6.a-2  PASS  Add_Customer_Address returns -1 for an empty description
+PU-4.6.b-1  FAIL  Update_Delete_Customer_Address updates and deletes the customer's own addresses
+                  - update: expected return code 0 but got -5 [dbo.Update_Delete_Customer_Address 17, 3, 'Dokki New Flat', 1, 'Update']
+                  - updated: expected Dokki New Flat/1 but got Dokki Old Flat/2
+PU-4.6.b-2  PASS  Update_Delete_Customer_Address returns -3 for another customer's address and -4 for an address of a Placed/In Progress order or used by a cart
+PU-4.6.c-1  PASS  Change_Active_Address makes the selected address the only active one
+PU-4.6.c-2  PASS  Change_Active_Address returns -3 for an address that is not the customer's
+PU-4.6.d-1  PASS  Add_Card saves a card
+PU-4.6.d-2  PASS  Add_Card returns -1 for an expired card or a bad number and -2 for a card already saved
+PU-4.6.e-1  PASS  Create_Cart creates an Active cart for the active address
+PU-4.6.e-2  PASS  Create_Cart returns -2 when the active address already has an Active cart and -3 for a Blacklisted customer
+PU-4.6.f-1  PASS  Add_To_Cart adds a new line and increases an existing line, replacing the note
+PU-4.6.f-2  PASS  Add_To_Cart returns -6 above 10, -5 outside the zone, -1 for quantity 0 and -4 for a cart that cannot be edited
+PU-4.6.g    PASS  Remove_From_Cart removes a line; -4 for a Checked Out cart
+PU-4.6.h    PASS  Calculate_Voucher_Discount handles fixed, percentage, cap and invalid vouchers
+PU-4.6.i-1  PASS  Checkout_Cart creates the order, SubOrders, Deliveries and Payment (voucher, wallet)
+PU-4.6.i-2  PASS  Checkout_Cart returns -9 for an empty cart, -3 for a Blacklisted customer and -4 for a cart that cannot be checked out
+PU-4.6.i-3  PASS  Checkout_Cart returns -7 when the payment cannot be made
+PU-4.6.j-1  PASS  Cancel_Order cancels everything, refunds to the wallet and restores the voucher
+PU-4.6.j-2  PASS  Cancel_Order returns -4 when a SubOrder was picked up, the order is Cancelled or Delivered
+PU-4.6.k-1  PASS  Reorder creates a new Active cart with the same items for the chosen address and makes it active
+PU-4.6.k-2  PASS  Reorder returns -3 (Blacklisted or not my address), -5 (zone differs) and -2 (address already has an Active cart)
+PU-4.6.l-1  PASS  Submit_Feedback stores feedback for a Delivered SubOrder
+PU-4.6.l-2  PASS  Submit_Feedback returns -2 for a second feedback, -4 for a SubOrder not delivered and -1 for a rating of 6
+PU-4.6.m-1  PASS  Rate_Rider stores the rider rating
+PU-4.6.m-2  PASS  Rate_Rider returns -2 for a second rating, -4 for a SubOrder not delivered and -1 for a rating of 0
+PU-4.6.n    PASS  My_Order_History lists all orders of the customer
+PU-4.6.o-1  PASS  Toggle_Favorite adds and then removes a product favorite
+PU-4.6.o-2  PASS  Toggle_Favorite removes an existing business favorite and returns -1 for an unknown item type
+PU-4.6.p    PASS  My_Favorites lists favorite products only, with is_orderable
+PU-4.6.q    PASS  Recommended_Products: unseen products of ordered categories in the active address zone, most ordered category first
+PU-4.7.a    FAIL  Set_Rider_Availability makes a rider available; -3 for a user who is not a rider
+                  - not a rider: expected return code -3 but got -1 [dbo.Set_Rider_Availability 17, 1]
+PU-4.7.b    PASS  My_Active_Deliveries lists Assigned and Picked Up deliveries
+PU-4.7.c-1  PASS  Mark_Picked_Up updates the delivery, the SubOrder and the order
+PU-4.7.c-2  PASS  Mark_Picked_Up returns -4 for Delivered, Cancelled and already Picked Up deliveries
+PU-4.7.d-1  PASS  Mark_Delivered stamps delivered_at, computes tracking_time and recomputes the order
+PU-4.7.d-2  PASS  Mark_Delivered returns -4 for a delivery that was not picked up
+PU-4.7.e    PASS  My_Earnings for September (80% of the fees of delivered deliveries)
+PU-4.7.f    FAIL  My_Rating_Summary with star breakdown
+                  - rows: expected 1 row(s), got 1. Missing rows: [{"avg_rating":4.50,"ratings_count":2,"five_star":1,"four_star":1,"three_star":0,"two_star":0,"one_star":0}]. Unexpected rows: [{"avg_rating":4.00,"ratings_count":2,"five_star":1,"four_star":1,"three_star":0,"two_star":0,"one_star":0}]
+PU-4.7.g    PASS  My_Delivery_History lists Delivered and Cancelled deliveries assigned in the range
+PU-4.8.a    PASS  Search_Platform ranks Active businesses of the customer's active address zone by match type
+PU-4.8.b    FAIL  Reconcile_Order_Totals is empty on consistent data and reports tampered orders
+                  - columns: cannot describe [SELECT * FROM dbo.Reconcile_Order_Totals()]: Invalid object name 'dbo.Reconcile_Order_Totals'.
+                  - consistent seed: error while running [SELECT * FROM dbo.Reconcile_Order_Totals()]: Invalid object name 'dbo.Reconcile_Order_Totals'.
+                  - tampered: error while running [SELECT * FROM dbo.Reconcile_Order_Totals()]: Invalid object name 'dbo.Reconcile_Order_Totals'.
+PU-4.8.c    FAIL  Nearby_Businesses_By_Category for Desserts near a Maadi address
+                  - rows: expected 3 row(s), got 3. Missing rows: [{"business_id":1,"business_name":"Koshary El Tahrir","zone_name":"Maadi","same_zone":true,"zone_avg_delivery_time":22.50},{"business_id":2,"business_name":"Pizza Roma","zone_name":"Maadi","same_zone":true,"zone_avg_delivery_time":22.50},{"business_id":4,"business_name":"Sushi Zen","zone_name":"Zamalek","same_zone":false,"zone_avg_delivery_time":35.00}]. Unexpected rows: [{"business_id":1,"business_name":"Koshary El Tahrir","zone_name":"Maadi","same_zone":true,"zone_avg_delivery_time":31.00},{"business_id":2,"business_name":"Pizza Roma","zone_name":"Maadi","same_zone":true,"zone_avg_delivery_time":31.00},{"business_id":4,"business_name":"Sushi Zen","zone_name":"Zamalek","same_zone":false,"zone_avg_delivery_time":45.00}]
+PU-4.8.d    PASS  Platform_Health_Snapshot on the seed data
+PP-1        FAIL  New customer: register, address, card, voucher, cart, checkout, delivery, feedback, rating
+                  - rider rating updated: expected 4.33 but got 4.00
+                  - totals reconcile: error while evaluating [SELECT COUNT(*) FROM dbo.Reconcile_Order_Totals()]: Invalid object name 'dbo.Reconcile_Order_Totals'.
+PP-2        FAIL  New partner: register, business, product, approval, search and add to cart
+                  - product cannot be carted while pending: expected return code -4 but got 0 [dbo.Add_To_Cart 9, 21, 4, NULL]
+                  - product cannot be carted while pending: the rejected call changed the database [dbo.Add_To_Cart 9, 21, 4, NULL]
+                  - in the cart: expected 4 but got 8
+PP-3        FAIL  Cancel an order, get the voucher back and use it on a new order
+                  - totals reconcile: error while evaluating [SELECT COUNT(*) FROM dbo.Reconcile_Order_Totals()]: Invalid object name 'dbo.Reconcile_Order_Totals'.
+PP-4        PASS  Blacklist a customer, see the effects on login and carts, and lift the blacklist
+
+================================================================================
+PASSED 94 of 108 public tests.
+Passing every public test does not guarantee full marks: the TAs also run private tests.
