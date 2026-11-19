@@ -25,11 +25,6 @@ return -1;
 if not exists (select * from address where address_id=@address_id and @customer_id=customer_id)
 return -3;
 
-if exists(select * from cart c inner join cartitem ci on ci.cart_id=c.cart_id
-inner join product p on p.product_id=ci.product_id
-inner join business b on b.business_id=p.business_id
-where c.address_id=@address_id and b.zone_id!=@zone_id and c.status='Active')
-return -5;
 
 if @validupd=0 or (@action='delete' and @validdel=0)
 return -4;
