@@ -1198,7 +1198,7 @@ AS
 RETURN(
 	SELECT *
 	FROM(
-	SELECT ROW_NUMBER() OVER (ORDER BY COUNT(d.delivery_id) DESC, rider_id ASC) AS rider_rank,
+	SELECT ROW_NUMBER() OVER (ORDER BY COUNT(d.delivery_id) DESC, r.rider_id ASC) AS rider_rank,
 	r.rider_id, CONCAT(u.first_name,' ',u.last_name) AS rider_name,
 	COUNT(d.delivery_id) AS completed_delivery_count
 	FROM Rider r INNER JOIN Users u ON r.rider_id = u.user_id
