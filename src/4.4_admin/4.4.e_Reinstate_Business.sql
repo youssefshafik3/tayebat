@@ -5,6 +5,7 @@ AS
 
     IF @super_admin_id IS NULL
         RETURN -1;
+
     IF NOT EXISTS (SELECT admin_id
                    FROM Admin
                    WHERE role = 'Super Admin'
