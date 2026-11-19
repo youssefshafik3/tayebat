@@ -1,7 +1,7 @@
 -- Youssef Sameh 64-10650
-CREATE PROCEDURE createAllTables
+CREATE OR ALTER PROCEDURE createAllTables
 AS
-    -- 3.1 Zone
+
     CREATE TABLE Zone (
         zone_id INT IDENTITY(1,1) PRIMARY KEY,
         zone_name VARCHAR(50) NOT NULL UNIQUE,
@@ -9,7 +9,6 @@ AS
         CONSTRAINT chck_del_fee_not_neg CHECK (delivery_fee>=0)
     );
 
-    -- 3.2 Users
     CREATE TABLE Users (
         user_id INT IDENTITY(1,1) PRIMARY KEY,
         first_name VARCHAR(30) NOT NULL,
@@ -22,7 +21,6 @@ AS
         account_status VARCHAR(20) NOT NULL DEFAULT 'Active'
     );
 
-    -- 3.3 User_Phone
     CREATE TABLE User_Phone (
         user_id INT,
         phone CHAR(11),
@@ -30,23 +28,19 @@ AS
         FOREIGN KEY (user_id) REFERENCES Users(user_id)
     );
 
-    -- 3.4 Admin
     CREATE TABLE Admin (
         admin_id INT PRIMARY KEY,
         role VARCHAR(20) NOT NULL DEFAULT 'Super Admin',
         zone_id INT,
         FOREIGN KEY (admin_id) REFERENCES Users(user_id),
-        FOREIGN KEY (zone_id) REFERENCES Zone(zone_id),
-        CONSTRAINT zone_id_null_for_super CHECK (role <> 'Super Admin' OR zone_id IS NULL)
+        FOREIGN KEY (zone_id) REFERENCES Zone(zone_id)
     );
 
-    -- 3.5 Partner
     CREATE TABLE Partner (
         partner_id INT PRIMARY KEY,
         FOREIGN KEY (partner_id) REFERENCES Users(user_id)
     );
 
-    -- 3.6 Rider
     CREATE TABLE Rider (
         rider_id INT PRIMARY KEY,
         vehicle_type VARCHAR(30) NOT NULL,
@@ -58,7 +52,6 @@ AS
         FOREIGN KEY (zone_id) REFERENCES Zone(zone_id)
     );
 
-    -- 3.7 Customer
     CREATE TABLE Customer (
         customer_id INT PRIMARY KEY,
         wallet_balance DECIMAL(10, 2) NOT NULL DEFAULT 0,
@@ -66,7 +59,6 @@ AS
         CONSTRAINT chk_balance_not_neg CHECK (wallet_balance >= 0)
     );
 
-    -- 3.8 Address
     CREATE TABLE Address (
         address_id INT IDENTITY(1,1) PRIMARY KEY,
         description VARCHAR(150) NOT NULL,
@@ -77,7 +69,6 @@ AS
         FOREIGN KEY (zone_id) REFERENCES Zone(zone_id)
     );
 
-    -- 3.9 Card
     CREATE TABLE Card (
         card_id INT IDENTITY(1,1) PRIMARY KEY,
         card_no CHAR(16) NOT NULL,
@@ -88,7 +79,6 @@ AS
         CONSTRAINT UQ_Customer_Card UNIQUE (customer_id, card_no)
     );
 
-    -- 3.10 Business
     CREATE TABLE Business (
         business_id INT IDENTITY(1,1) PRIMARY KEY,
         name VARCHAR(100) NOT NULL,
@@ -103,11 +93,9 @@ AS
         zone_id INT NOT NULL,
         FOREIGN KEY (partner_id) REFERENCES Partner(partner_id),
         FOREIGN KEY (zone_id) REFERENCES Zone(zone_id),
-        CONSTRAINT chk_exp_del_time_pos CHECK (expected_delivery_time>0),
-        CONSTRAINT chk_reason_only_if_suspended CHECK (suspension_reason IS NULL OR status = 'Suspended')
+        CONSTRAINT chk_exp_del_time_pos CHECK (expected_delivery_time>0)
     );
 
-    -- 3.11 Business_Phone
     CREATE TABLE Business_Phone (
         business_id INT,
         phone CHAR(11),
@@ -115,7 +103,6 @@ AS
         FOREIGN KEY (business_id) REFERENCES Business(business_id)
     );
 
-    -- 3.12 Restaurant
     CREATE TABLE Restaurant (
         business_id INT PRIMARY KEY,
         cuisine_type VARCHAR(50) NOT NULL,
@@ -123,14 +110,12 @@ AS
         FOREIGN KEY (business_id) REFERENCES Business(business_id)
     );
 
-    -- 3.13 Pharmacy
     CREATE TABLE Pharmacy (
         business_id INT PRIMARY KEY,
         pharmacy_type VARCHAR(50) NOT NULL,
         FOREIGN KEY (business_id) REFERENCES Business(business_id)
     );
 
-    -- 3.14 Blacklist
     CREATE TABLE Blacklist (
         customer_id INT PRIMARY KEY,
         admin_id INT NOT NULL,
@@ -139,7 +124,6 @@ AS
         FOREIGN KEY (admin_id) REFERENCES Admin(admin_id)
     );
 
-    -- 3.15 Product
     CREATE TABLE Product (
         product_id INT IDENTITY(1,1) PRIMARY KEY,
         name VARCHAR(100) NOT NULL,
@@ -154,7 +138,6 @@ AS
         CONSTRAINT chk_discount_range CHECK (discount_amount >=0 AND discount_amount<=.5*price)
     );
 
-    -- 3.16 Favorite_Business
     CREATE TABLE Favorite_Business (
         customer_id INT,
         business_id INT,
@@ -163,7 +146,6 @@ AS
         FOREIGN KEY (business_id) REFERENCES Business(business_id)
     );
 
-    -- 3.17 Favorite_Product
     CREATE TABLE Favorite_Product (
         customer_id INT,
         product_id INT,
@@ -172,7 +154,6 @@ AS
         FOREIGN KEY (product_id) REFERENCES Product(product_id)
     );
 
-    -- 3.18 Voucher
     CREATE TABLE Voucher (
         voucher_id INT IDENTITY(1,1) PRIMARY KEY,
         promo_code VARCHAR(30) NOT NULL UNIQUE,
@@ -185,7 +166,6 @@ AS
         CONSTRAINT chk_amount_pos CHECK (amount>0)
     );
 
-    -- 3.19 Cart
     CREATE TABLE Cart (
         cart_id INT IDENTITY(1,1) PRIMARY KEY,
         status VARCHAR(20) NOT NULL DEFAULT 'Active',
@@ -196,7 +176,6 @@ AS
         FOREIGN KEY (address_id) REFERENCES Address(address_id)
     );
 
-    -- 3.20 CartItem
     CREATE TABLE CartItem (
         cart_id INT,
         product_id INT,
@@ -209,7 +188,6 @@ AS
         CONSTRAINT chk_quantity_range CHECK (quantity BETWEEN 1 AND 10)
     );
 
-    -- 3.21 Orders
     CREATE TABLE Orders (
         order_id INT IDENTITY(1,1) PRIMARY KEY,
         order_date DATETIME NOT NULL,
@@ -224,7 +202,6 @@ AS
         FOREIGN KEY (voucher_id) REFERENCES Voucher(voucher_id)
     );
 
-    -- 3.22 SubOrder
     CREATE TABLE SubOrder (
         suborder_id INT IDENTITY(1,1) PRIMARY KEY,
         status VARCHAR(20) NOT NULL DEFAULT 'Placed',
@@ -237,7 +214,6 @@ AS
         CONSTRAINT UQ_Order_Business UNIQUE (order_id, business_id)
     );
 
-    -- 3.23 Delivery
     CREATE TABLE Delivery (
         delivery_id INT IDENTITY(1,1) PRIMARY KEY,
         assigned_at DATETIME NOT NULL,
@@ -252,7 +228,6 @@ AS
         CONSTRAINT chk_rider_rating_range CHECK (rider_rating BETWEEN 1 AND 5)
     );
 
-    -- 3.24 Payment
     CREATE TABLE Payment (
         payment_id INT IDENTITY(1,1) PRIMARY KEY,
         amount DECIMAL(10, 2) NOT NULL,
