@@ -11,10 +11,13 @@ if not exists(select * from cart where cart_id=@cart_id and status='Active')
 or exists (select * from cart c inner join address a on a.address_id =c.address_id 
 where @cart_id=c.cart_id and a.is_active=0)
 begin
-print('not your active address address')
+print('not your active address')
 return -4;
 end
 
+if not exists(select * from product p inner join business b on b.business_id=p.business_id
+where @product_id=p.product_id and b.status='Active' or p.is_available=0 )
+return -4;
 
 declare @cartzone int
 declare @businesszone int
