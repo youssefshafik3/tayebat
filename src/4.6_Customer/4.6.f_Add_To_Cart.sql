@@ -16,7 +16,7 @@ return -4;
 end
 
 if not exists(select * from product p inner join business b on b.business_id=p.business_id
-where @product_id=p.product_id and (b.status='Active' or p.is_available=0) )
+where @product_id=p.product_id and (b.status='Active' and p.is_available=1) )
 return -4;
 
 declare @cartzone int
