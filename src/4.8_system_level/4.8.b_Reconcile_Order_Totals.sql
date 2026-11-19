@@ -12,7 +12,7 @@ RETURN(
 	p.amount AS payment_amount
 	FROM (Orders o INNER JOIN SubOrder so ON o.order_id=so.order_id)
 	LEFT OUTER JOIN Payment p ON o.order_id = p.order_id 
-	GROUP BY o.order_id,o.total_amount,p.amount
+	GROUP BY o.order_id,o.total_amount,p.amount,o.discount_amount
 	) AS T
 	WHERE T.expected_total <> T.order_total OR T.payment_amount is NULL OR T.payment_amount <>T.order_total
 
