@@ -1,5 +1,5 @@
 -- Youssef Sameh 64-10650
-CREATE PROCEDURE Helper_Recompute_Order_Status
+CREATE OR ALTER PROCEDURE Helper_Recompute_Order_Status
     @order_id INT
 AS
     

@@ -242,7 +242,6 @@ AS
         CONSTRAINT chk_refunded CHECK (refunded_amount <= amount)
     );
 
-    -- 3.25 Feedback
     CREATE TABLE Feedback (
         feedback_id INT IDENTITY(1,1) PRIMARY KEY,
         headline VARCHAR(100) NOT NULL,

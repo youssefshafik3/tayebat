@@ -1,5 +1,5 @@
 -- Youssef Sameh 64-10650
-CREATE PROCEDURE dropAllTables
+CREATE OR ALTER PROCEDURE dropAllTables
 AS
     DROP TABLE IF EXISTS Feedback;
     DROP TABLE IF EXISTS Payment;

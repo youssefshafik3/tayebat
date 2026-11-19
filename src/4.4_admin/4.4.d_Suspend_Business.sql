@@ -1,31 +1,39 @@
 -- Youssef Sameh 64-10650
-CREATE PROCEDURE Suspend_Business
+CREATE OR ALTER PROCEDURE Suspend_Business
     @business_id INT, @admin_id INT, @reason VARCHAR(255)
 AS
+    IF @admin_id IS NULL OR @business_id IS NULL OR @reason IS NULL
+        RETURN -1;
+
+    IF NOT EXISTS (SELECT *
+                    FROM Admin
+                    WHERE admin_id = @admin_id)
+        RETURN -1;
+
     DECLARE @admin_role VARCHAR(20);
 
     SELECT @admin_role = role
     FROM Admin
     WHERE admin_id = @admin_id;
 
-    IF @admin_role = 'Zone Admin'
-    BEGIN
-        DECLARE @business_zone_id INT;
-        DECLARE @admin_zone_id INT;
+    IF @admin_role <> 'Zone Admin'
+        RETURN -3;
 
-        SELECT @business_zone_id = zone_id
-        FROM Business
-        WHERE business_id = @business_id;
+    DECLARE @business_zone_id INT;
+    DECLARE @admin_zone_id INT;
 
-        SELECT @admin_zone_id = zone_id
-        FROM Admin
-        WHERE admin_id = @admin_id;
+    SELECT @business_zone_id = zone_id
+    FROM Business
+    WHERE business_id = @business_id;
+
+    SELECT @admin_zone_id = zone_id
+    FROM Admin
+    WHERE admin_id = @admin_id;
         
-        IF @admin_zone_id <> business_zone_id
+    IF @admin_zone_id <> @business_zone_id
         BEGIN
             RETURN -3;
         END
-    END
 
     DECLARE @business_status VARCHAR(20);
 
@@ -39,7 +47,7 @@ AS
     END
 
     UPDATE Business
-    SET status = 'Suspended', reason = @reason
+    SET status = 'Suspended', suspension_reason = @reason
     WHERE business_id = @business_id;
 
     UPDATE Product
