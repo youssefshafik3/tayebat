@@ -8,7 +8,7 @@ AS
 BEGIN
 	IF @rider_id NOT IN (SELECT rider_id FROM Rider)
 	BEGIN
-	RETURN -1;
+	RETURN -3;
 	END
 
 	UPDATE Rider
