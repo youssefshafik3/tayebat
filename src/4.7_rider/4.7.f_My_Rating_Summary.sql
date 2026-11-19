@@ -5,16 +5,15 @@ CREATE FUNCTION My_Rating_Summary(@rider_id INT)
 RETURNS TABLE
 AS
 RETURN(
-	SELECT AVG(CAST(f.rating AS DECIMAL(10,2))) AS avg_rating ,COUNT(f.rating) AS ratings_count,
-	COUNT(CASE WHEN f.rating = 5 THEN 1 END) AS five_star,
-	COUNT(CASE WHEN f.rating = 4 THEN 1 END) AS four_star,
-	COUNT(CASE WHEN f.rating = 3 THEN 1 END) AS three_star,
-	COUNT(CASE WHEN f.rating = 2 THEN 1 END) AS two_star,
-	COUNT(CASE WHEN f.rating = 1 THEN 1 END) AS one_star
+	SELECT AVG(CAST(d.rider_rating AS DECIMAL(10,2))) AS avg_rating ,COUNT(d.rider_rating) AS ratings_count,
+	COUNT(CASE WHEN d.rider_rating = 5 THEN 1 END) AS five_star,
+	COUNT(CASE WHEN d.rider_rating = 4 THEN 1 END) AS four_star,
+	COUNT(CASE WHEN d.rider_rating = 3 THEN 1 END) AS three_star,
+	COUNT(CASE WHEN d.rider_rating = 2 THEN 1 END) AS two_star,
+	COUNT(CASE WHEN d.rider_rating = 1 THEN 1 END) AS one_star
 
-	FROM Rider r LEFT OUTER JOIN (Delivery d 
-	INNER JOIN(SubOrder so LEFT OUTER JOIN Feedback f ON f.suborder_id = so.suborder_id) 
-	ON so.suborder_id = d.suborder_id) ON r.rider_id = d.rider_id
-	WHERE r.rider_id = @rider_id
+	FROM Delivery d
+	WHERE d.rider_id = @rider_id
+	GROUP BY d.rider_id
 );
 GO

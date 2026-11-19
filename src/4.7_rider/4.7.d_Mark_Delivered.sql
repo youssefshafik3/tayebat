@@ -37,7 +37,7 @@ BEGIN
 	SET status = 'Delivered'
 	WHERE order_id=@o_id AND NOT EXISTS(SELECT so.suborder_id
 	FROM SubOrder so
-	WHERE so.order_id = @o_id AND so.status <> 'Delivered' AND so.status <> 'Canceled'
+	WHERE so.order_id = @o_id AND so.status <> 'Delivered' AND so.status <> 'Cancelled'
 	)
 	AND EXISTS(SELECT so.suborder_id
 	FROM SubOrder so

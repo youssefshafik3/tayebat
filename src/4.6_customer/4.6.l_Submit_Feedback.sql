@@ -14,7 +14,7 @@ BEGIN
 		RETURN -1;
 	END
 
-	IF @rating NOT BETWEEN 1 AND 5 OR @headline is NULL
+	IF @rating NOT BETWEEN 1 AND 5 OR @headline is NULL OR @rating is NULL
 	BEGIN
 		RETURN -1;
 	END

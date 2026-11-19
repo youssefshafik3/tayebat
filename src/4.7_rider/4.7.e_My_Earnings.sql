@@ -10,6 +10,11 @@ RETURN(
 
 	FROM Delivery d INNER JOIN SubOrder so ON d.suborder_id = so.suborder_id
 	WHERE d.rider_id = @rider_id AND CAST(d.delivered_at AS DATE) >= @from_date 
-	AND CAST(d.delivered_at AS DATE) <= @to_date AND so.status = 'Delivered' 
+	AND CAST(d.delivered_at AS DATE) <= @to_date AND so.status = 'Delivered'AND @rider_id IS NOT NULL
+        AND @from_date IS NOT NULL
+        AND @to_date IS NOT NULL
+        AND @from_date <= @to_date 
+
+	GROUP BY d.rider_id
 );
 GO

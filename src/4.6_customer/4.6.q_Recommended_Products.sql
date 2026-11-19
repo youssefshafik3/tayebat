@@ -12,7 +12,7 @@ SELECT p.product_id,p.name AS product_name,b.name AS business_name,p.category,
 		(SELECT SUM(ci2.quantity)
 		FROM Orders o2 INNER JOIN Cart c2 ON o2.cart_id = c2.cart_id 
 					INNER JOIN CartItem ci2 ON ci2.cart_id = c2.cart_id
-					INNER JOIN Product p2 ON ci2.product_id = p2.product_id
+					INNER JOIN Product p2 ON ci2.product_id = p2.product_id AND o2.status <> 'Cancelled'
 		WHERE c2.customer_id = @customer_id AND p.category = p2.category) AS count_of_ordered_category
 
 FROM Product p INNER JOIN Business b ON p.business_id = b.business_id
@@ -22,7 +22,7 @@ WHERE p.is_available = 1 AND b.status = 'Active'
 	AND NOT EXISTS( SELECT *
 	FROM Orders o INNER JOIN Cart c ON o.cart_id = c.cart_id
 		INNER JOIN CartItem ci ON ci.cart_id = c.cart_id
-	WHERE c.customer_id = @customer_id AND ci.product_id = p.product_id
+	WHERE c.customer_id = @customer_id AND ci.product_id = p.product_id AND o.status <> 'Cancelled'
 	)
 ) AS T
 

@@ -6,7 +6,7 @@ CREATE PROCEDURE Rate_Rider
 	@rider_rating int
 AS
 BEGIN
-	IF @suborder_id NOT IN (SELECT suborder_id FROM SubOrder) OR @rider_rating NOT BETWEEN 1 AND 5
+	IF @suborder_id NOT IN (SELECT suborder_id FROM SubOrder) OR @rider_rating NOT BETWEEN 1 AND 5 OR @rider_rating is NULL
 	BEGIN
 		RETURN -1;
 	END
