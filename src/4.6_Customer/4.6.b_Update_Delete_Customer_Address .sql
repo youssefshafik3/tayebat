@@ -12,9 +12,9 @@ where @customer_id=c.customer_id and @address_id=c.address_id and o.status in ('
 
 declare @validdel bit
 select @validdel = case when not exists(select * from cart c 
-where @customer_id=c.customer_id and @address_id=c.address_id ) or exists(select * from cart c
+where @customer_id=c.customer_id and @address_id=c.address_id ) or exists (select * from cart c
 inner join orders o on o.cart_id=c.cart_id
-where @customer_id=c.customer_id and @address_id=c.address_id and o.status in ('Placed', 'In Progress') )
+where @customer_id=c.customer_id and @address_id=c.address_id and o.status in ('Placed', 'In Progress'))
 then 1 else 0 end
 
 if (@customer_id is null or @address_id is null or @action is null) or
@@ -24,6 +24,12 @@ return -1;
 
 if not exists (select * from address where address_id=@address_id and @customer_id=customer_id)
 return -3;
+
+if exists(select * from cart c inner join cartitem ci on ci.cart_id=c.cart_id
+inner join product p on p.product_id=ci.product_id
+inner join business b on b.business_id=p.business_id
+where c.address_id=@address_id and b.zone_id!=@zone_id and c.status='Active')
+return -5;
 
 if @validupd=0 or (@action='delete' and @validdel=0)
 return -4;
