@@ -30,6 +30,14 @@ inner join business b on p.business_id=b.business_id
 where ci.cart_id=@cart_id and @zone_id!=b.zone_id)
 return -5;
 
+declare @now time
+set @now= cast(getdate() as time)
+if exists (select * from cartitem ci inner join product p on p.product_id=ci.product_id
+inner join business b on p.business_id=b.business_id
+where ci.cart_id=@cart_id and ((b.opening_hour < b.closing_hour and( @now < b.opening_hour or @now >= b.closing_hour))or (b.opening_hour > b.closing_hour and (@now >= b.closing_hour and @now < b.opening_hour))))
+return -4;
+
+
 if not exists(select* from cartitem ca where ca.cart_id=@cart_id) 
 return -9;
 
@@ -68,8 +76,22 @@ if @isValidCard=0 and @payment_method='Card'
 return -7;
 
 
-begin try
-    begin transaction
+declare @suborder_id int, @rider_id int
+
+set @rider_id = null
+    select top 1 @rider_id = r.rider_id
+    from Rider r
+inner join Users u on u.user_id = r.rider_id
+left join Delivery d on d.rider_id = r.rider_id
+left join SubOrder s on s.suborder_id = d.suborder_id and s.status in ('Assigned', 'Picked Up')
+where r.zone_id = @zone_id and r.is_available = 1 and u.account_status = 'Active'
+group by r.rider_id
+order by count(s.suborder_id), r.rider_id
+
+    if @rider_id is null
+    begin
+        return -8
+    end
 
 
 update c
@@ -102,13 +124,44 @@ group by b.business_id
 
 update voucher set status = 'Used' where voucher_id = @voucher_id
 
-commit
+
+while exists (select 1 from suborder where order_id = @order_id and status = 'Placed')
+begin
+set @rider_id=null
+    select top 1 @rider_id = r.rider_id
+    from Rider r
+inner join Users u on u.user_id = r.rider_id
+left join Delivery d on d.rider_id = r.rider_id
+left join SubOrder s on s.suborder_id = d.suborder_id and s.status in ('Assigned', 'Picked Up')
+where r.zone_id = @zone_id and r.is_available = 1 and u.account_status = 'Active'
+group by r.rider_id
+order by count(s.suborder_id), r.rider_id
+
+    if @rider_id is null
+    begin
+        return -8
+    end
+
+    select @suborder_id = min(suborder_id) from suborder where order_id = @order_id and status = 'Placed'
+
+    insert into Delivery (assigned_at, suborder_id, rider_id) values (getdate(), @suborder_id, @rider_id)
+    update suborder set status='Assigned' where suborder_id = @suborder_id
+end
+
+if @payment_method='Card'
+Insert into Payment(amount, method, transaction_date, order_id ,card_id) 
+values(@total, @payment_method, getdate(), @order_id, @card_id)
+else 
+Insert into Payment(amount, method, transaction_date, order_id ,card_id) 
+values(@total, @payment_method, getdate(), @order_id, null)
+
+if @payment_method='Wallet'
+update customer set Customer.wallet_balance = wallet_balance - @total where customer_id = @customer_id
+
+Update cart set status = 'Checked Out' where cart_id = @cart_id
+
+
 return 0
-end try
-begin catch
-    if @@trancount > 0 rollback
-    return -1 
-end catch
 
 end
 go
