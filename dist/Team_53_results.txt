@@ -46,8 +46,7 @@ PU-4.4.h-2  PASS  Assign_Admin_Zone returns -1 for a Super Admin target and -3 f
 PU-4.4.i-1  PASS  Issue_Voucher creates an Unused voucher
 PU-4.4.i-2  PASS  Issue_Voucher returns -3 for a Blacklisted customer and -2 for a duplicate promo code
 PU-4.4.j-1  PASS  Blacklist_Customer blocks the account, cancels cancellable orders, refunds and deletes Unused vouchers
-PU-4.4.j-2  FAIL  Blacklist_Customer returns -4 if already Blacklisted and -3 for a Zone Admin without an address in the zone
-                  - already blacklisted: expected return code -4 but got -3 [dbo.Blacklist_Customer 21, 1, 'Again']
+PU-4.4.j-2  PASS  Blacklist_Customer returns -4 if already Blacklisted and -3 for a Zone Admin without an address in the zone
 PU-4.4.k-1  PASS  Lift_Customer_Blacklist: the admin who blacklisted the customer lifts it
 PU-4.4.k-2  PASS  Lift_Customer_Blacklist returns -3 for any other admin, even a Super Admin
 PU-4.4.l    PASS  ZoneOrderReport for Maadi and New Cairo in September
@@ -61,8 +60,7 @@ PU-4.5.a-3  PASS  Register_Business re-registers a Rejected business: same row, 
 PU-4.5.b-1  PASS  Update_Business_Info updates hours and website and adds a phone
 PU-4.5.b-2  PASS  Update_Business_Info returns -1 for a malformed phone and -2 for a phone the business already has
 PU-4.5.c-1  PASS  Upsert_Product inserts a new product when product_id is NULL and updates an existing one
-PU-4.5.c-2  FAIL  Upsert_Product returns -3 for a product of another business, -4 for a Suspended business and -1 for invalid data
-                  - discount would exceed 50%: the call raised an error instead of returning -1 [dbo.Upsert_Product 2, 5, 'Margherita Pizza', NULL, 'Pizza', 30.00, 1]: The UPDATE statement conflicted with the CHECK constraint "chk_discount_range". The conflict occurred in database "LocalDeliveryMarketplace_Team_53", table "dbo.Product".
+PU-4.5.c-2  PASS  Upsert_Product returns -3 for a product of another business, -4 for a Suspended business and -1 for invalid data
 PU-4.5.d-1  PASS  Toggle_Product_Status deactivates a product
 PU-4.5.d-2  PASS  Toggle_Product_Status returns -4 when reactivating while the business is Suspended
 PU-4.5.e-1  PASS  Set_Product_Promotion sets a discount amount and 0 removes it
@@ -71,9 +69,7 @@ PU-4.5.f    PASS  BusinessSalesReport for Koshary El Tahrir in September
 PU-4.5.g    PASS  BusinessFeedbackOverview with star breakdown
 PU-4.6.a-1  PASS  Add_Customer_Address adds an address that becomes the only active one
 PU-4.6.a-2  PASS  Add_Customer_Address returns -1 for an empty description
-PU-4.6.b-1  FAIL  Update_Delete_Customer_Address updates and deletes the customer's own addresses
-                  - update: expected return code 0 but got -5 [dbo.Update_Delete_Customer_Address 17, 3, 'Dokki New Flat', 1, 'Update']
-                  - updated: expected Dokki New Flat/1 but got Dokki Old Flat/2
+PU-4.6.b-1  PASS  Update_Delete_Customer_Address updates and deletes the customer's own addresses
 PU-4.6.b-2  PASS  Update_Delete_Customer_Address returns -3 for another customer's address and -4 for an address of a Placed/In Progress order or used by a cart
 PU-4.6.c-1  PASS  Change_Active_Address makes the selected address the only active one
 PU-4.6.c-2  PASS  Change_Active_Address returns -3 for an address that is not the customer's
@@ -117,8 +113,7 @@ PU-4.8.b    FAIL  Reconcile_Order_Totals is empty on consistent data and reports
                   - columns: cannot describe [SELECT * FROM dbo.Reconcile_Order_Totals()]: Invalid object name 'dbo.Reconcile_Order_Totals'.
                   - consistent seed: error while running [SELECT * FROM dbo.Reconcile_Order_Totals()]: Invalid object name 'dbo.Reconcile_Order_Totals'.
                   - tampered: error while running [SELECT * FROM dbo.Reconcile_Order_Totals()]: Invalid object name 'dbo.Reconcile_Order_Totals'.
-PU-4.8.c    FAIL  Nearby_Businesses_By_Category for Desserts near a Maadi address
-                  - rows: expected 3 row(s), got 3. Missing rows: [{"business_id":1,"business_name":"Koshary El Tahrir","zone_name":"Maadi","same_zone":true,"zone_avg_delivery_time":22.50},{"business_id":2,"business_name":"Pizza Roma","zone_name":"Maadi","same_zone":true,"zone_avg_delivery_time":22.50},{"business_id":4,"business_name":"Sushi Zen","zone_name":"Zamalek","same_zone":false,"zone_avg_delivery_time":35.00}]. Unexpected rows: [{"business_id":1,"business_name":"Koshary El Tahrir","zone_name":"Maadi","same_zone":true,"zone_avg_delivery_time":31.00},{"business_id":2,"business_name":"Pizza Roma","zone_name":"Maadi","same_zone":true,"zone_avg_delivery_time":31.00},{"business_id":4,"business_name":"Sushi Zen","zone_name":"Zamalek","same_zone":false,"zone_avg_delivery_time":45.00}]
+PU-4.8.c    PASS  Nearby_Businesses_By_Category for Desserts near a Maadi address
 PU-4.8.d    PASS  Platform_Health_Snapshot on the seed data
 PP-1        FAIL  New customer: register, address, card, voucher, cart, checkout, delivery, feedback, rating
                   - rider rating updated: expected 4.33 but got 4.00
@@ -132,5 +127,5 @@ PP-3        FAIL  Cancel an order, get the voucher back and use it on a new orde
 PP-4        PASS  Blacklist a customer, see the effects on login and carts, and lift the blacklist
 
 ================================================================================
-PASSED 94 of 108 public tests.
+PASSED 98 of 108 public tests.
 Passing every public test does not guarantee full marks: the TAs also run private tests.

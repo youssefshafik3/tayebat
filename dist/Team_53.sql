@@ -1,5 +1,7 @@
 
 
+
+
 -- Youssef Sameh 64-10650
 CREATE DATABASE LocalDeliveryMarketplace_Team_53;
 GO
@@ -266,9 +268,9 @@ AS
 GO
 
 
-
 EXEC createAllTables;
 GO
+
 
 -- Youssef Sameh 64-10650
 CREATE OR ALTER PROCEDURE Helper_Recompute_Order_Status
@@ -294,8 +296,6 @@ AS
 
     RETURN 0;
 GO
-
-
 
 
 -- Youssef Sameh 64-10650
@@ -335,9 +335,29 @@ GO
 CREATE OR ALTER PROCEDURE dropAllProceduresFunctionsViews
 AS
 
-    DROP PROCEDURE IF EXISTS Helper_Recompute_Order_Status, createAllTables, dropAllTables, Suspend_Business, Reinstate_Business, Create_Zone, Update_Zone_Fee;
+    -- PROCEDURES
+    DROP PROCEDURE IF EXISTS Helper_Recompute_Order_Status;
+    DROP PROCEDURE IF EXISTS createAllTables;
+    DROP PROCEDURE IF EXISTS dropAllTables;
+    DROP PROCEDURE IF EXISTS Suspend_Business;
+    DROP PROCEDURE IF EXISTS Reinstate_Business;
+    DROP PROCEDURE IF EXISTS Create_Zone;
+    DROP PROCEDURE IF EXISTS Update_Zone_Fee;
+
+
+
+
+
+
+
     DROP FUNCTION IF EXISTS dbo.ZoneOrderReport, dbo.Daily_Revenue_Report;
+
+
+
+
+    DROP VIEW IF EXISTS allBusinessProfiles;
     DROP VIEW IF EXISTS BusinessesPerZone;
+    DROP VIEW IF EXISTS BusinessRatingsSummary;
 
     RETURN 0;
 GO
@@ -374,7 +394,7 @@ CREATE VIEW BusinessRatingsSummary
 AS
 
 SELECT b.business_id,b.name AS business_name,
-AVG(CAST(f.rating AS DECIMAL(10,5))) AS avg_rating,COUNT(f.rating) AS ratings_count
+AVG(f.rating) AS avg_rating,COUNT(f.rating) AS ratings_count
 
 FROM Business b LEFT OUTER JOIN 
 (SubOrder so LEFT OUTER JOIN Feedback f ON so.suborder_id=f.suborder_id)
@@ -416,7 +436,7 @@ CREATE VIEW RiderPerformanceSummary
 AS
 SELECT r.rider_id,CONCAT(u.first_name,' ',u.last_name) AS rider_name,z.zone_name ,
 COUNT(d.delivery_id) AS completed_deliveries,
-AVG(CAST(f.rating AS DECIMAL(10,5))) AS avg_rating
+AVG(f.rating) AS avg_rating
 
 FROM ((Rider r INNER JOIN Users u ON r.rider_id = u.user_id) INNER JOIN Zone z ON r.zone_id = z.zone_id)
 	LEFT OUTER JOIN (Delivery d 
@@ -454,7 +474,7 @@ CREATE VIEW ZoneDeliveryPerformance
 AS
 SELECT z.zone_id,z.zone_name,
 COUNT(d.delivery_id) AS delivery_count,
-AVG(CAST(d.tracking_time AS DECIMAL(10,5))) AS avg_tracking_time
+AVG(d.tracking_time) AS avg_tracking_time
 
 FROM (Zone z LEFT OUTER JOIN Orders o ON z.zone_id = o.zone_id)
 LEFT OUTER JOIN (Delivery d 
@@ -1088,7 +1108,7 @@ RETURN -1;
 END;
 IF EXISTS (SELECT 1 FROM Blacklist B WHERE B.customer_id=@customer_id) OR EXISTS(SELECT 1 FROM Users U WHERE U.user_id=@customer_id AND U.account_status='Blacklisted')
 BEGIN
-RETURN -3;
+RETURN -4;
 END;
 IF (NOT EXISTS(SELECT 1 FROM Customer C WHERE C.customer_id=@customer_id) OR NOT EXISTS(SELECT 1 FROM Admin A WHERE A.admin_id=@admin_id))
 BEGIN
@@ -1198,7 +1218,7 @@ AS
 RETURN(
 	SELECT *
 	FROM(
-	SELECT ROW_NUMBER() OVER (ORDER BY COUNT(d.delivery_id) DESC, r.rider_id ASC) AS rider_rank,
+	SELECT ROW_NUMBER() OVER (ORDER BY COUNT(d.delivery_id) DESC, rider_id ASC) AS rider_rank,
 	r.rider_id, CONCAT(u.first_name,' ',u.last_name) AS rider_name,
 	COUNT(d.delivery_id) AS completed_delivery_count
 	FROM Rider r INNER JOIN Users u ON r.rider_id = u.user_id
@@ -1412,6 +1432,9 @@ IF NOT EXISTS (SELECT * FROM Product WHERE product_id = @product_id
 AND business_id = @business_id)
 RETURN -3;
 
+IF EXISTS (SELECT 1 FROM Product WHERE product_id = @product_id AND discount_amount > 0.5 * @price)
+RETURN -1;
+
 UPDATE Product 
 SET Product.name = @name,
 Product.description = @description, 
@@ -1574,11 +1597,6 @@ return -1;
 if not exists (select * from address where address_id=@address_id and @customer_id=customer_id)
 return -3;
 
-if exists(select * from cart c inner join cartitem ci on ci.cart_id=c.cart_id
-inner join product p on p.product_id=ci.product_id
-inner join business b on b.business_id=p.business_id
-where c.address_id=@address_id and b.zone_id!=@zone_id and c.status='Active')
-return -5;
 
 if @validupd=0 or (@action='delete' and @validdel=0)
 return -4;
@@ -2460,7 +2478,7 @@ CREATE FUNCTION My_Rating_Summary(@rider_id INT)
 RETURNS TABLE
 AS
 RETURN(
-	SELECT AVG(CAST(f.rating AS DECIMAL(10,5))) AS avg_rating ,COUNT(f.rating) AS ratings_count,
+	SELECT AVG(f.rating) AS avg_rating ,COUNT(f.rating) AS ratings_count,
 	COUNT(CASE WHEN f.rating = 5 THEN 1 END) AS five_star,
 	COUNT(CASE WHEN f.rating = 4 THEN 1 END) AS four_star,
 	COUNT(CASE WHEN f.rating = 3 THEN 1 END) AS three_star,
@@ -2526,7 +2544,7 @@ RETURN(
 	p.amount AS payment_amount
 	FROM (Orders o INNER JOIN SubOrder so ON o.order_id=so.order_id)
 	LEFT OUTER JOIN Payment p ON o.order_id = p.order_id 
-	GROUP BY o.order_id,o.total_amount,p.amount,o.discount_amount
+	GROUP BY o.order_id,o.total_amount,p.amount
 	) AS T
 	WHERE T.expected_total <> T.order_total OR T.payment_amount is NULL OR T.payment_amount <>T.order_total
 
@@ -2541,8 +2559,10 @@ RETURNS TABLE
 AS
 RETURN(
 SELECT B.business_id, B.name AS business_name, Z.zone_name, CASE WHEN B.zone_id = A.zone_id
-THEN 1 ELSE 0 END AS same_zone, (SELECT AVG(B2.expected_delivery_time) FROM Business B2
-WHERE B2.zone_id = B.zone_id AND B2.status = 'Active') AS zone_avg_delivery_time
+THEN 1 ELSE 0 END AS same_zone, (SELECT AVG(CAST(D.tracking_time AS DECIMAL(10,2)))
+FROM Delivery D INNER JOIN SubOrder SO ON D.suborder_id = SO.suborder_id
+INNER JOIN Orders O ON SO.order_id = O.order_id WHERE O.zone_id = B.zone_id AND SO.status = 'Delivered'
+) AS zone_avg_delivery_time
 FROM Business B 
 INNER JOIN Zone Z ON B.zone_id = Z.zone_id
 INNER JOIN Address A ON A.address_id = @address_id
