@@ -374,7 +374,7 @@ CREATE VIEW BusinessRatingsSummary
 AS
 
 SELECT b.business_id,b.name AS business_name,
-AVG(CAST(f.rating AS DECIMAL(10,2))) AS avg_rating,COUNT(f.rating) AS ratings_count
+AVG(CAST(f.rating AS DECIMAL(10,5))) AS avg_rating,COUNT(f.rating) AS ratings_count
 
 FROM Business b LEFT OUTER JOIN 
 (SubOrder so LEFT OUTER JOIN Feedback f ON so.suborder_id=f.suborder_id)
@@ -416,7 +416,7 @@ CREATE VIEW RiderPerformanceSummary
 AS
 SELECT r.rider_id,CONCAT(u.first_name,' ',u.last_name) AS rider_name,z.zone_name ,
 COUNT(d.delivery_id) AS completed_deliveries,
-AVG(f.rating) AS avg_rating
+AVG(CAST(f.rating AS DECIMAL(10,5))) AS avg_rating
 
 FROM ((Rider r INNER JOIN Users u ON r.rider_id = u.user_id) INNER JOIN Zone z ON r.zone_id = z.zone_id)
 	LEFT OUTER JOIN (Delivery d 
@@ -454,7 +454,7 @@ CREATE VIEW ZoneDeliveryPerformance
 AS
 SELECT z.zone_id,z.zone_name,
 COUNT(d.delivery_id) AS delivery_count,
-AVG(d.tracking_time) AS avg_tracking_time
+AVG(CAST(d.tracking_time AS DECIMAL(10,5))) AS avg_tracking_time
 
 FROM (Zone z LEFT OUTER JOIN Orders o ON z.zone_id = o.zone_id)
 LEFT OUTER JOIN (Delivery d 
@@ -2460,7 +2460,7 @@ CREATE FUNCTION My_Rating_Summary(@rider_id INT)
 RETURNS TABLE
 AS
 RETURN(
-	SELECT AVG(f.rating) AS avg_rating ,COUNT(f.rating) AS ratings_count,
+	SELECT AVG(CAST(f.rating AS DECIMAL(10,5))) AS avg_rating ,COUNT(f.rating) AS ratings_count,
 	COUNT(CASE WHEN f.rating = 5 THEN 1 END) AS five_star,
 	COUNT(CASE WHEN f.rating = 4 THEN 1 END) AS four_star,
 	COUNT(CASE WHEN f.rating = 3 THEN 1 END) AS three_star,
