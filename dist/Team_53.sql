@@ -1,7 +1,6 @@
 
 
 
-
 -- Youssef Sameh 64-10650
 CREATE DATABASE LocalDeliveryMarketplace_Team_53;
 GO
@@ -268,10 +267,6 @@ AS
 GO
 
 
-EXEC createAllTables;
-GO
-
-
 -- Youssef Sameh 64-10650
 CREATE OR ALTER PROCEDURE Helper_Recompute_Order_Status
     @order_id INT
@@ -297,6 +292,8 @@ AS
     RETURN 0;
 GO
 
+EXEC createAllTables
+GO
 
 -- Youssef Sameh 64-10650
 CREATE OR ALTER PROCEDURE dropAllTables
@@ -332,34 +329,91 @@ GO
 
 
 -- Youssef Sameh 64-10650
-CREATE OR ALTER PROCEDURE dropAllProceduresFunctionsViews
+CREATE PROCEDURE dropAllProceduresFunctionsViews
 AS
+BEGIN
 
-    -- PROCEDURES
-    DROP PROCEDURE IF EXISTS Helper_Recompute_Order_Status;
-    DROP PROCEDURE IF EXISTS createAllTables;
-    DROP PROCEDURE IF EXISTS dropAllTables;
-    DROP PROCEDURE IF EXISTS Suspend_Business;
-    DROP PROCEDURE IF EXISTS Reinstate_Business;
-    DROP PROCEDURE IF EXISTS Create_Zone;
-    DROP PROCEDURE IF EXISTS Update_Zone_Fee;
-
-
-
-
-
-
-
-    DROP FUNCTION IF EXISTS dbo.ZoneOrderReport, dbo.Daily_Revenue_Report;
-
-
-
+    -- Views
 
     DROP VIEW IF EXISTS allBusinessProfiles;
     DROP VIEW IF EXISTS BusinessesPerZone;
     DROP VIEW IF EXISTS BusinessRatingsSummary;
+    DROP VIEW IF EXISTS ActiveVouchers;
+    DROP VIEW IF EXISTS PendingBusinessApprovals;
+    DROP VIEW IF EXISTS RiderPerformanceSummary;
+    DROP VIEW IF EXISTS TopSellingProducts;
+    DROP VIEW IF EXISTS ZoneDeliveryPerformance;
+
+    -- Functions
+
+    DROP FUNCTION IF EXISTS CustomerLoginValidation;
+    DROP FUNCTION IF EXISTS PartnerLoginValidation;
+    DROP FUNCTION IF EXISTS RiderLoginValidation;
+    DROP FUNCTION IF EXISTS AdminLoginValidation;
+    DROP FUNCTION IF EXISTS ZoneOrderReport;
+    DROP FUNCTION IF EXISTS TopRiders;
+    DROP FUNCTION IF EXISTS Daily_Revenue_Report;
+    DROP FUNCTION IF EXISTS BusinessSalesReport;
+    DROP FUNCTION IF EXISTS BusinessFeedbackOverview;
+    DROP FUNCTION IF EXISTS Calculate_Voucher_Discount;
+    DROP FUNCTION IF EXISTS My_Order_History;
+    DROP FUNCTION IF EXISTS My_Favorites;
+    DROP FUNCTION IF EXISTS Recommended_Products;
+    DROP FUNCTION IF EXISTS My_Active_Deliveries;
+    DROP FUNCTION IF EXISTS My_Earnings;
+    DROP FUNCTION IF EXISTS My_Rating_Summary;
+    DROP FUNCTION IF EXISTS My_Delivery_History;
+    DROP FUNCTION IF EXISTS Search_Platform;
+    DROP FUNCTION IF EXISTS Reconcile_Order_Totals;
+    DROP FUNCTION IF EXISTS Nearby_Businesses_By_Category;
+    DROP FUNCTION IF EXISTS Platform_Health_Snapshot;
+
+    -- Procedures
+
+    DROP PROCEDURE IF EXISTS createAllTables;
+    DROP PROCEDURE IF EXISTS dropAllTables;
+    DROP PROCEDURE IF EXISTS clearAllTables;
+    DROP PROCEDURE IF EXISTS Customer_Register;
+    DROP PROCEDURE IF EXISTS Partner_Register;
+    DROP PROCEDURE IF EXISTS Rider_Register;
+    DROP PROCEDURE IF EXISTS Change_Password;
+    DROP PROCEDURE IF EXISTS Create_Admin;
+    DROP PROCEDURE IF EXISTS Approve_Business;
+    DROP PROCEDURE IF EXISTS Reject_Business;
+    DROP PROCEDURE IF EXISTS Suspend_Business;
+    DROP PROCEDURE IF EXISTS Reinstate_Business;
+    DROP PROCEDURE IF EXISTS Create_Zone;
+    DROP PROCEDURE IF EXISTS Update_Zone_Fee;
+    DROP PROCEDURE IF EXISTS Assign_Admin_Zone;
+    DROP PROCEDURE IF EXISTS Issue_Voucher;
+    DROP PROCEDURE IF EXISTS Blacklist_Customer;
+    DROP PROCEDURE IF EXISTS Lift_Customer_Blacklist;
+    DROP PROCEDURE IF EXISTS Register_Business;
+    DROP PROCEDURE IF EXISTS Update_Business_Info;
+    DROP PROCEDURE IF EXISTS Upsert_Product;
+    DROP PROCEDURE IF EXISTS Toggle_Product_Status;
+    DROP PROCEDURE IF EXISTS Set_Product_Promotion;
+    DROP PROCEDURE IF EXISTS Add_Customer_Address;
+    DROP PROCEDURE IF EXISTS Update_Delete_Customer_Address;
+    DROP PROCEDURE IF EXISTS Change_Active_Address;
+    DROP PROCEDURE IF EXISTS Add_Card;
+    DROP PROCEDURE IF EXISTS Create_Cart;
+    DROP PROCEDURE IF EXISTS Add_To_Cart;
+    DROP PROCEDURE IF EXISTS Remove_From_Cart;
+    DROP PROCEDURE IF EXISTS Checkout_Cart;
+    DROP PROCEDURE IF EXISTS Cancel_Order;
+    DROP PROCEDURE IF EXISTS Reorder;
+    DROP PROCEDURE IF EXISTS Submit_Feedback;
+    DROP PROCEDURE IF EXISTS Rate_Rider;
+    DROP PROCEDURE IF EXISTS Toggle_Favorite;
+    DROP PROCEDURE IF EXISTS Set_Rider_Availability;
+    DROP PROCEDURE IF EXISTS Mark_Picked_Up;
+    DROP PROCEDURE IF EXISTS Mark_Delivered;
+    DROP PROCEDURE IF EXISTS Helper_Recompute_Order_Status;
 
     RETURN 0;
+
+END;
 GO
 
 
@@ -387,14 +441,14 @@ CREATE OR ALTER VIEW BusinessesPerZone AS
 GO
 
 
-﻿-- Omar Waleed El-sayed 64-29234
+-- Omar Waleed El-sayed 64-29234
 
 GO
 CREATE VIEW BusinessRatingsSummary
 AS
 
 SELECT b.business_id,b.name AS business_name,
-AVG(f.rating) AS avg_rating,COUNT(f.rating) AS ratings_count
+AVG(CAST(f.rating AS DECIMAL(10,2))) AS avg_rating,COUNT(f.rating) AS ratings_count
 
 FROM Business b LEFT OUTER JOIN 
 (SubOrder so LEFT OUTER JOIN Feedback f ON so.suborder_id=f.suborder_id)
@@ -429,14 +483,14 @@ WHERE B.status = 'Pending'
 GO
 
 
-﻿-- Omar Waleed El-sayed 64-29234
+-- Omar Waleed El-sayed 64-29234
 
 GO
 CREATE VIEW RiderPerformanceSummary
 AS
 SELECT r.rider_id,CONCAT(u.first_name,' ',u.last_name) AS rider_name,z.zone_name ,
 COUNT(d.delivery_id) AS completed_deliveries,
-AVG(f.rating) AS avg_rating
+AVG(CAST(d.rider_rating AS DECIMAL(10,2))) AS avg_rating
 
 FROM ((Rider r INNER JOIN Users u ON r.rider_id = u.user_id) INNER JOIN Zone z ON r.zone_id = z.zone_id)
 	LEFT OUTER JOIN (Delivery d 
@@ -467,14 +521,14 @@ ORDER BY units_sold DESC, P.product_id ASC
 GO
 
 
-﻿-- Omar Waleed El-sayed 64-29234
+-- Omar Waleed El-sayed 64-29234
 
 GO
 CREATE VIEW ZoneDeliveryPerformance
 AS
 SELECT z.zone_id,z.zone_name,
 COUNT(d.delivery_id) AS delivery_count,
-AVG(d.tracking_time) AS avg_tracking_time
+AVG(CAST(d.tracking_time AS DECIMAL(10,2))) AS avg_tracking_time
 
 FROM (Zone z LEFT OUTER JOIN Orders o ON z.zone_id = o.zone_id)
 LEFT OUTER JOIN (Delivery d 
@@ -1209,7 +1263,7 @@ RETURN
 GO
 
 
-﻿-- Omar Waleed El-sayed 64-29234
+-- Omar Waleed El-sayed 64-29234
 
 GO
 CREATE FUNCTION TopRiders(@from_date DATE,@to_date DATE)
@@ -1218,7 +1272,7 @@ AS
 RETURN(
 	SELECT *
 	FROM(
-	SELECT ROW_NUMBER() OVER (ORDER BY COUNT(d.delivery_id) DESC, rider_id ASC) AS rider_rank,
+	SELECT ROW_NUMBER() OVER (ORDER BY COUNT(d.delivery_id) DESC, r.rider_id ASC) AS rider_rank,
 	r.rider_id, CONCAT(u.first_name,' ',u.last_name) AS rider_name,
 	COUNT(d.delivery_id) AS completed_delivery_count
 	FROM Rider r INNER JOIN Users u ON r.rider_id = u.user_id
@@ -1710,7 +1764,7 @@ return -4;
 end
 
 if not exists(select * from product p inner join business b on b.business_id=p.business_id
-where @product_id=p.product_id and b.status='Active' or p.is_available=0 )
+where @product_id=p.product_id and (b.status='Active' or p.is_available=0) )
 return -4;
 
 declare @cartzone int
@@ -2081,7 +2135,7 @@ end
 go
 
 
-﻿-- Omar Waleed El-sayed 64-29234
+-- Omar Waleed El-sayed 64-29234
 
 
 GO
@@ -2126,7 +2180,7 @@ END
 GO
 
 
-﻿-- Omar Waleed El-sayed 64-29234
+-- Omar Waleed El-sayed 64-29234
 
 GO
 CREATE PROCEDURE Rate_Rider
@@ -2267,7 +2321,7 @@ WHERE FP.customer_id = @customer_id
 GO
 
 
-﻿-- Omar Waleed El-sayed 64-29234
+-- Omar Waleed El-sayed 64-29234
 
 GO
 CREATE FUNCTION Recommended_Products(@customer_id INT)
@@ -2302,7 +2356,7 @@ ORDER BY T.count_of_ordered_category DESC , T.product_id ASC
 GO
 
 
-﻿-- Omar Waleed El-sayed 64-29234
+-- Omar Waleed El-sayed 64-29234
 
 GO
 CREATE PROCEDURE Set_Rider_Availability
@@ -2312,7 +2366,7 @@ AS
 BEGIN
 	IF @rider_id NOT IN (SELECT rider_id FROM Rider)
 	BEGIN
-	RETURN -1;
+	RETURN -3;
 	END
 
 	UPDATE Rider
@@ -2324,7 +2378,7 @@ END
 GO
 
 
-﻿-- Omar Waleed El-sayed 64-29234
+-- Omar Waleed El-sayed 64-29234
 
 GO
 CREATE FUNCTION My_Active_Deliveries(@rider_id INT)
@@ -2357,7 +2411,7 @@ RETURN(
 GO
 
 
-﻿-- Omar Waleed El-sayed 64-29234
+-- Omar Waleed El-sayed 64-29234
 
 GO
 CREATE PROCEDURE Mark_Picked_Up
@@ -2404,7 +2458,7 @@ END
 GO
 
 
-﻿-- Omar Waleed El-sayed 64-29234
+-- Omar Waleed El-sayed 64-29234
 
 GO
 CREATE PROCEDURE Mark_Delivered
@@ -2454,7 +2508,7 @@ END
 GO
 
 
-﻿-- Omar Waleed El-sayed 64-29234
+-- Omar Waleed El-sayed 64-29234
 
 GO
 CREATE FUNCTION My_Earnings(@rider_id INT, @from_date DATE, @to_date DATE)
@@ -2471,14 +2525,14 @@ RETURN(
 GO
 
 
-﻿-- Omar Waleed El-sayed 64-29234
+-- Omar Waleed El-sayed 64-29234
 
 GO
 CREATE FUNCTION My_Rating_Summary(@rider_id INT)
 RETURNS TABLE
 AS
 RETURN(
-	SELECT AVG(f.rating) AS avg_rating ,COUNT(f.rating) AS ratings_count,
+	SELECT AVG(CAST(f.rating AS DECIMAL(10,2))) AS avg_rating ,COUNT(f.rating) AS ratings_count,
 	COUNT(CASE WHEN f.rating = 5 THEN 1 END) AS five_star,
 	COUNT(CASE WHEN f.rating = 4 THEN 1 END) AS four_star,
 	COUNT(CASE WHEN f.rating = 3 THEN 1 END) AS three_star,
@@ -2493,7 +2547,7 @@ RETURN(
 GO
 
 
-﻿-- Omar Waleed El-sayed 64-29234
+-- Omar Waleed El-sayed 64-29234
 
 GO
 CREATE FUNCTION My_Delivery_History(@rider_id INT,@from_date DATE, @to_date DATE)
@@ -2530,7 +2584,7 @@ ORDER BY priority ASC
 GO
 
 
-﻿-- Omar Waleed El-sayed 64-29234
+-- Omar Waleed El-sayed 64-29234
 
 GO
 CREATE FUNCTION Reconcile_Order_Totals()
@@ -2544,7 +2598,7 @@ RETURN(
 	p.amount AS payment_amount
 	FROM (Orders o INNER JOIN SubOrder so ON o.order_id=so.order_id)
 	LEFT OUTER JOIN Payment p ON o.order_id = p.order_id 
-	GROUP BY o.order_id,o.total_amount,p.amount
+	GROUP BY o.order_id,o.total_amount,p.amount,o.discount_amount
 	) AS T
 	WHERE T.expected_total <> T.order_total OR T.payment_amount is NULL OR T.payment_amount <>T.order_total
 
@@ -2572,7 +2626,7 @@ WHERE @product_category IS NOT NULL AND B.status = 'Active' AND EXISTS
 GO
 
 
-﻿-- Omar Waleed El-sayed 64-29234
+-- Omar Waleed El-sayed 64-29234
 
 GO
 CREATE FUNCTION Platform_Health_Snapshot()
